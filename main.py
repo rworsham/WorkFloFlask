@@ -37,6 +37,7 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
+
 class TodoPost(db.Model):
     __tablename__ = "todo_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -48,7 +49,6 @@ class TodoPost(db.Model):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     author = relationship("User",back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
-
 
 
 class User(UserMixin, db.Model):
@@ -75,6 +75,7 @@ class Comment(db.Model):
 with app.app_context():
     db.create_all()
 
+
 class CreatePostForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
@@ -88,10 +89,18 @@ class RegisterForm(FlaskForm):
     name = StringField("name", validators=[DataRequired()])
     submit = SubmitField("Sign Me Up!")
 
+
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Log In")
+
+
+class RegistrationForm(FlaskForm):
+    email = EmailField("Email Address", validators=[DataRequired()])
+    password = PasswordField("Enter Password", validators=[DataRequired()])
+    name = StringField("Username", validators=[DataRequired()])
+    submit = SubmitField("Sign Up")
 
 
 class CommentForm(FlaskForm):
@@ -101,8 +110,7 @@ class CommentForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
-
+    return db.session.get(User, user_id)
 
 
 @app.route('/', methods=["GET","POST"])
@@ -121,15 +129,44 @@ def login():
             return redirect(url_for('login'))
         else:
             login_user(user)
-            return redirect(url_for('home'))
+            return redirect(url_for('dashboard'))
     return render_template("login.html", form=form)
+
+
+@app.route('/register',methods=["GET","POST"])
+@login_required
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user_email = result.scalar()
+        name = form.name.data
+        name_result = db.session.execute(db.select(User).where(User.name == name))
+        user_name = name_result.scalar()
+        if user_email:
+            flash("Email already exist")
+            return redirect(url_for('login'))
+        new_user = User(
+            name=form.name.data,
+            email=form.email.data,
+            password=generate_password_hash(password=form.password.data,method="pbkdf2:sha256",salt_length=8)
+        )
+        if user_name:
+            message = "Username already exist, please try again"
+            return render_template("register.html", messages=message)
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        return redirect(url_for('dashboard'))
+    return render_template("register.html", form=form)
 
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route("/dashboard")
 @login_required
