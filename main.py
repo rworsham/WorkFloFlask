@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Boolean, ForeignKey, Text
+from sqlalchemy import Integer, String, Boolean, ForeignKey, Text, DATE
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -44,12 +44,18 @@ class TodoPost(db.Model):
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     work_state: Mapped[str] = mapped_column(String(50))
-    date: Mapped[str] = mapped_column(String(250), nullable=False)
+    date: Mapped[str] = mapped_column(DATE)
     body: Mapped[str] = mapped_column(Text, nullable=False)
+    # project = relationship("Project", back_populates=)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     author = relationship("User",back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
 
+
+
+# class Project(db.Model):
+#     __tablename__ = "project"
+#     project: Mapped[str] = mapped_column(String(250), nullable=False)
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -76,18 +82,11 @@ with app.app_context():
     db.create_all()
 
 
-class CreatePostForm(FlaskForm):
+class CreateTodoForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
     body = CKEditorField("Content", validators=[DataRequired()])
     submit = SubmitField("Submit Work")
-
-
-class RegisterForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    name = StringField("name", validators=[DataRequired()])
-    submit = SubmitField("Sign Me Up!")
 
 
 class LoginForm(FlaskForm):
