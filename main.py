@@ -59,6 +59,7 @@ class Project(db.Model):
     project: Mapped[str] = mapped_column(String(250), nullable=False)
     posts = relationship("TodoPost", back_populates="project")
 
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

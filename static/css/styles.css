@@ -249,11 +249,11 @@ a {
   text-decoration: underline;
 }
 a:hover {
-  color: var(--bs-link-hover-color);
+  color: white;
 }
 
 a:not([href]):not([class]), a:not([href]):not([class]):hover {
-  color: inherit;
+  color: white;
   text-decoration: none;
 }
 
@@ -10866,5 +10866,9 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
   margin: auto;
   width: auto;
   padding: 200px;
+}
+.btn-link-decor-none {
+    text-decoration: none;
+    color: white;
 }
 }
