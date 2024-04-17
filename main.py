@@ -46,16 +46,18 @@ class TodoPost(db.Model):
     work_state: Mapped[str] = mapped_column(String(50))
     date: Mapped[str] = mapped_column(DATE)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    # project = relationship("Project", back_populates=)
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"))
+    project = relationship("Project", back_populates="posts")
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     author = relationship("User",back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
 
 
-
-# class Project(db.Model):
-#     __tablename__ = "project"
-#     project: Mapped[str] = mapped_column(String(250), nullable=False)
+class Project(db.Model):
+    __tablename__ = "project"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project: Mapped[str] = mapped_column(String(250), nullable=False)
+    posts = relationship("TodoPost", back_populates="project")
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -167,10 +169,26 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html")
+
+
+@app.route('/projects')
+def projects():
+    return render_template('projects.html')
+
+
+@app.route('/overview')
+def overview():
+    return render_template('overview.html')
+
+
+@app.route('/events')
+def events():
+    return render_template('events.html')
 
 
 
