@@ -30,6 +30,7 @@
                     <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-todo"><a class="btn-link-decor-none"><i class="bi bi-patch-plus"></i> Add Todo</a></button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#work-state"><a class="btn-link-decor-none"><i class="bi bi-patch-plus"></i> Add WorkFlo</a></button>
 
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -58,11 +59,44 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        ...
+                        {% with messages = get_flashed_messages() %}
+                          {% if messages %}
+                          {% for message in messages %}
+                          <p class="flash">{{ message }}</p>
+                          {% endfor %}
+                          {% endif %}
+                          {% endwith %}
+                          <div class="col-lg-8 col-md-10 mx-auto">
+                            {{ render_form(form, novalidate=True,button_map={"submit": "dark"}) }}
+                          </div>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal fade" id="work-state" tabindex="-1" aria-labelledby="work-state-label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="work-state-label">Add WorkFlo</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        {% with messages = get_flashed_messages() %}
+                          {% if messages %}
+                          {% for message in messages %}
+                          <p class="flash">{{ message }}</p>
+                          {% endfor %}
+                          {% endif %}
+                          {% endwith %}
+                          <div class="col-lg-8 col-md-10 mx-auto">
+                            {{ render_form(work_state_form, novalidate=True,button_map={"submit": "dark"}) }}
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+
                       </div>
                     </div>
                   </div>
@@ -71,7 +105,7 @@
                     <div class="row dashboard">
                         <div class="col-md-auto">
                             <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-body-tertiary" style="width: 380px;">
-                                <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+                                <a  class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
                                   <span class="fs-5 fw-semibold">List group</span>
                                 </a>
                                 <div class="list-group list-group border-bottom scrollarea">

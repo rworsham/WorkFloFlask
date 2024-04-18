@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectMultipleField
-from wtforms.validators import DataRequired, URL
+from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField
+from wtforms.validators import DataRequired, URL, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
@@ -60,6 +60,13 @@ class Project(db.Model):
     posts = relationship("TodoPost", back_populates="project")
 
 
+class WorkState(db.Model):
+    __tablename__ = "workstate"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    work_state: Mapped[str] = mapped_column(String(250), nullable=False)
+    work_state_order : Mapped[int] = mapped_column(Integer)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -88,10 +95,10 @@ with app.app_context():
 class CreateTodoForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
-    work_state = SelectMultipleField("Select Work State", validators=[DataRequired()])
+    work_state = SelectField("Select Work State", coerce=int, validators=[InputRequired])
     date = datetime.datetime.now()
     body = CKEditorField("Content", validators=[DataRequired()])
-    project = SelectMultipleField("Select Project")
+    project = SelectField("Select Project", coerce=int, validators=[InputRequired])
     # author =
     submit = SubmitField("Submit Work")
 
@@ -118,6 +125,11 @@ class ProjectForm(FlaskForm):
     project_name = StringField(validators=[DataRequired()])
     submit = SubmitField("Save")
 
+
+class WorkStateForm(FlaskForm):
+    work_state = StringField("WorkFlo Name", validators=[DataRequired()])
+    work_state_order = IntegerField("WorkFlo Order: 1 Through etc.", validators=[NumberRange(min=1),DataRequired()])
+    save = SubmitField("Save")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -183,10 +195,15 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    form = TodoPost()
-    if form.validate_on_submit():
+    available_projects =
+    available_work_states = db.session.query(WorkState)
+    form = CreateTodoForm()
+    work_state_form = WorkStateForm()
+    if form.submit.data and form.validate_on_submit():
         pass
-    return render_template("dashboard.html", form=form)
+    if work_state_form.save.data and work_state_form.validate_on_submit():
+        pass
+    return render_template("dashboard.html", form=form, work_state_form=work_state_form)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
