@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField
+from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectMultipleField
 from wtforms.validators import DataRequired, URL
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -41,7 +41,7 @@ gravatar = Gravatar(app,
 class TodoPost(db.Model):
     __tablename__ = "todo_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(250), nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     work_state: Mapped[str] = mapped_column(String(50))
     date: Mapped[str] = mapped_column(DATE)
@@ -88,7 +88,11 @@ with app.app_context():
 class CreateTodoForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
+    work_state = SelectMultipleField("Select Work State", validators=[DataRequired()])
+    date = datetime.datetime.now()
     body = CKEditorField("Content", validators=[DataRequired()])
+    project = SelectMultipleField("Select Project")
+    # author =
     submit = SubmitField("Submit Work")
 
 
@@ -179,7 +183,10 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    form = TodoPost()
+    if form.validate_on_submit():
+        pass
+    return render_template("dashboard.html", form=form)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
