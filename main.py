@@ -110,6 +110,11 @@ class CommentForm(FlaskForm):
     submit = SubmitField("Submit Comment")
 
 
+class ProjectForm(FlaskForm):
+    project_name = StringField(validators=[DataRequired()])
+    submit = SubmitField("Save")
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
@@ -171,15 +176,31 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route("/dashboard")
+@app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
     return render_template("dashboard.html")
 
 
-@app.route('/projects')
+@app.route('/projects', methods=['GET', 'POST'])
 def projects():
-    return render_template('projects.html')
+    form = ProjectForm()
+    all_projects = Project.query.order_by(Project.id).all()
+    project_list = [all_projects]
+    if form.validate_on_submit():
+        project_name = form.project_name.data
+        result = db.session.execute(db.select(Project).where(Project.project == project_name))
+        project_name_result = result.scalar()
+        if project_name_result:
+            flash("That project already exist, please try again")
+            return redirect(url_for('projects'))
+        new_project = Project(
+            project=form.project_name.data
+        )
+        db.session.add(new_project)
+        db.session.commit()
+        return redirect(url_for('projects'))
+    return render_template('projects.html', form=form, projects=project_list)
 
 
 @app.route('/overview')
@@ -187,7 +208,7 @@ def overview():
     return render_template('overview.html')
 
 
-@app.route('/events')
+@app.route('/events', methods=['GET', 'POST'])
 def events():
     return render_template('events.html')
 
