@@ -12,7 +12,7 @@ from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
 import smtplib
 from email.message import EmailMessage
-import datetime
+from datetime import date
 
 app = Flask(__name__)
 app.secret_key = "rob"
@@ -43,8 +43,8 @@ class TodoPost(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(250), nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
-    work_state: Mapped[str] = mapped_column(String(50))
-    date: Mapped[str] = mapped_column(DATE)
+    work_state: Mapped[int] = mapped_column(Integer)
+    date: Mapped[str] = mapped_column(String(50))
     body: Mapped[str] = mapped_column(Text, nullable=False)
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"))
     project = relationship("Project", back_populates="posts")
@@ -95,11 +95,9 @@ with app.app_context():
 class CreateTodoForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
-    work_state = SelectField("Select Work State", coerce=int, validators=[InputRequired])
-    date = datetime.datetime.now()
+    work_state = SelectField("Select Work State", coerce=int, validators=[InputRequired()])
     body = CKEditorField("Content", validators=[DataRequired()])
-    project = SelectField("Select Project", coerce=int, validators=[InputRequired])
-    # author =
+    project = SelectField("Select Project", coerce=int, validators=[InputRequired()])
     submit = SubmitField("Submit Work")
 
 
@@ -131,6 +129,7 @@ class WorkStateForm(FlaskForm):
     work_state_order = IntegerField("WorkFlo Order: 1 Through etc.", validators=[NumberRange(min=1),DataRequired()])
     save = SubmitField("Save")
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
@@ -157,7 +156,6 @@ def login():
 
 
 @app.route('/register',methods=["GET","POST"])
-@login_required
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -195,14 +193,43 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    available_projects =
-    available_work_states = db.session.query(WorkState)
+    available_projects = db.session.query(Project).all()
+    projects_list = [(i.id, i.project) for i in available_projects]
+    available_work_states = db.session.query(WorkState).all()
+    work_state_list = [(i.id, i.work_state) for i in available_work_states]
     form = CreateTodoForm()
     work_state_form = WorkStateForm()
+    form.project.choices = projects_list
+    form.work_state.choices = work_state_list
     if form.submit.data and form.validate_on_submit():
+        print(form.title.data)
+        print(form.subtitle.data)
+        print(form.work_state.data)
+        print(datetime.datetime.now())
+        print(form.body.data)
+        print(form.project.data)
+        print(current_user)
+        new_todo = TodoPost(
+            title=form.title.data,
+            subtitle=form.subtitle.data,
+            work_state=form.work_state.data,
+            date=date.today().strftime("%B %d, %Y"),
+            body=form.body.data,
+            project_id=form.project.data,
+            author=current_user
+        )
+        db.session.add(new_todo)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
         pass
     if work_state_form.save.data and work_state_form.validate_on_submit():
-        pass
+        new_state = WorkState(
+            work_state=work_state_form.work_state.data,
+            work_state_order=work_state_form.work_state_order.data
+        )
+        db.session.add(new_state)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
     return render_template("dashboard.html", form=form, work_state_form=work_state_form)
 
 
@@ -235,7 +262,6 @@ def overview():
 @app.route('/events', methods=['GET', 'POST'])
 def events():
     return render_template('events.html')
-
 
 
 if __name__ == '__main__':
