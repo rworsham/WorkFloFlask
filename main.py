@@ -64,7 +64,7 @@ class WorkState(db.Model):
     __tablename__ = "workstate"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     work_state: Mapped[str] = mapped_column(String(250), nullable=False)
-    work_state_order : Mapped[int] = mapped_column(Integer)
+    work_state_order: Mapped[int] = mapped_column(Integer)
 
 
 class User(UserMixin, db.Model):
@@ -193,6 +193,10 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    all_work_states = WorkState.query.order_by(WorkState.work_state_order).all()
+    all_work_state_list = [all_work_states]
+    todos = TodoPost.query.order_by(TodoPost.work_state).all()
+    todos_list = [todos]
     available_projects = db.session.query(Project).all()
     projects_list = [(i.id, i.project) for i in available_projects]
     available_work_states = db.session.query(WorkState).all()
@@ -202,13 +206,6 @@ def dashboard():
     form.project.choices = projects_list
     form.work_state.choices = work_state_list
     if form.submit.data and form.validate_on_submit():
-        print(form.title.data)
-        print(form.subtitle.data)
-        print(form.work_state.data)
-        print(datetime.datetime.now())
-        print(form.body.data)
-        print(form.project.data)
-        print(current_user)
         new_todo = TodoPost(
             title=form.title.data,
             subtitle=form.subtitle.data,
@@ -230,7 +227,7 @@ def dashboard():
         db.session.add(new_state)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template("dashboard.html", form=form, work_state_form=work_state_form)
+    return render_template("dashboard.html", form=form, work_state_form=work_state_form, work_states=all_work_state_list, todos=todos_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])

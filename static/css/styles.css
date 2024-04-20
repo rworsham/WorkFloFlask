@@ -249,7 +249,7 @@ a {
   text-decoration: underline;
 }
 a:hover {
-  color: white;
+  text-decoration: none;
 }
 
 a:not([href]):not([class]), a:not([href]):not([class]):hover {
@@ -10911,5 +10911,9 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
   @include media-breakpoint-only(xl) {
     column-count: 5;
   }
+}
+.dashboard-scroll {
+    overflow-x: scroll;
+    width: 100%;
 }
 }
