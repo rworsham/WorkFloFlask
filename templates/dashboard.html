@@ -11,7 +11,7 @@
         <link href="static/css/styles.css" rel="stylesheet" />
     </head>
     <body>
-    {% from "bootstrap5/form.html" import render_form %}
+    {% from "bootstrap5/form.html" import render_form, render_field %}
         <div class="d-flex" id="wrapper">
             <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
@@ -101,17 +101,61 @@
                     </div>
                   </div>
                 </div>
-                <div class="modal fade" id="todo-post" tabindex="-1" aria-labelledby="todo-post-label" aria-hidden="true">
-                  <div class="modal-dialog">
+                {% for row in todos %}
+                {% for todo in row %}
+                <div class="modal fade" id="todo-post{{ todo.id }}" tabindex="-1" aria-labelledby="todo-post-label" aria-hidden="true">
+                  <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="todo-post-label">Add Todo</h1>
+                        <h1 class="modal-title fs-5" id="todo-post-label">{{ todo.title }}</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
+                            <div class="row">
+                              <div class="col-md-4">
+                                  {{ todo.subtitle }}
+                              </div>
+                              <div class="col-md-3 ms-auto">
+                                  ID# {{ todo.id }}
+                              </div>
+                                <span class="border-bottom border-secondary"></span>
+                            </div>
+                          <div class="row">
+                              <div class="col-md-3 ms-auto align-top">
+                              Created By:{{ todo.author.name }}
+                              </div>
+                          </div>
+                          <div class="row py-5">
+                            <div class="col-md-8">
+                              {{ todo.body }}
+                            </div>
+                          </div>
+                          <div class="row">
+                              {% if todo.comments %}
+                                {% for row in comments %}
+                                    {% for comment in row %}
+                                        {% if comment.post_id == todo.id %}
+                                        <div class="list-group">
+                                            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                            <div class="d-flex w-100 justify-content-between">
+                                              <h5 class="mb-1">{{ comment.comment_author.name }}</h5>
+                                              <small class="text-muted">{{ comment.date }}</small>
+                                            </div>
+                                            <p class="mb-1">{{ comment.text }}</p>
+                                          </a>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                              {% endif %}
+                              <form method="post">
+                                  <dl>
+                                      {{ render_field(comment_form.comment) }}
+                                      {{ comment_form.post_id(value=todo.id) }}
+                                      {{ render_field(comment_form.submit_comment) }}
+                                  </dl>
+                              </form>
 
-                          <div class="col-lg-8 col-md-10 mx-auto">
-                            Test data modals are cool
                           </div>
                       </div>
                       <div class="modal-footer">
@@ -120,6 +164,8 @@
                     </div>
                   </div>
                 </div>
+                {% endfor %}
+                {% endfor %}
                 <div class="container-fluid">
                     <div class="row dashboard dashboard-scroll flex-nowrap">
 
@@ -137,7 +183,7 @@
                                     {% for row in todos %}
                                     {% for todo in row%}
                                       {% if todo.work_state == work_state.id%}
-                                  <a href="#" data-bs-toggle="modal" data-bs-target="#todo-post" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
+                                  <a href="#" data-bs-toggle="modal" data-bs-target="#todo-post{{ todo.id }}" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
 
                                     <div class="d-flex w-100 align-items-center justify-content-between">
                                       <strong class="mb-1">{{ todo.title }}</strong>

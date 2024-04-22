@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField
+from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField, HiddenField, Form
 from wtforms.validators import DataRequired, URL, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -84,7 +84,7 @@ class Comment(db.Model):
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
     comment_author = relationship("User", back_populates="comments")
-    post_id: Mapped[str] = mapped_column(Integer,db.ForeignKey("todo_posts.id"))
+    post_id: Mapped[int] = mapped_column(Integer,db.ForeignKey("todo_posts.id"))
     parent_post = relationship("TodoPost", back_populates="comments")
 
 
@@ -114,9 +114,10 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField("Sign Up")
 
 
-class CommentForm(FlaskForm):
+class CommentForm(Form):
     comment = CKEditorField("Comment", validators=[DataRequired()])
-    submit = SubmitField("Submit Comment")
+    post_id = HiddenField("Post Id")
+    submit_comment = SubmitField("Submit Comment")
 
 
 class ProjectForm(FlaskForm):
@@ -193,6 +194,8 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    all_comments = Comment.query.order_by(Comment.post_id).all()
+    all_comments_list = [all_comments]
     all_work_states = WorkState.query.order_by(WorkState.work_state_order).all()
     all_work_state_list = [all_work_states]
     todos = TodoPost.query.order_by(TodoPost.work_state).all()
@@ -203,6 +206,7 @@ def dashboard():
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     form = CreateTodoForm()
     work_state_form = WorkStateForm()
+    comment_form = CommentForm(request.form)
     form.project.choices = projects_list
     form.work_state.choices = work_state_list
     if form.submit.data and form.validate_on_submit():
@@ -227,7 +231,21 @@ def dashboard():
         db.session.add(new_state)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template("dashboard.html", form=form, work_state_form=work_state_form, work_states=all_work_state_list, todos=todos_list)
+    if comment_form.submit_comment and comment_form.validate() and request.method == "POST":
+
+        # print(f"This is the form data{comment_form.post_id.data}")
+        new_comment = Comment(
+            text=comment_form.comment.data,
+            date=date.today().strftime("%b %d, %Y %H:%M: %p"),
+            comment_author=current_user,
+            post_id=comment_form.post_id.data
+        )
+        print("NEw comment")
+        db.session.add(new_comment)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    return render_template("dashboard.html", form=form, work_state_form=work_state_form,
+                           work_states=all_work_state_list, todos=todos_list, comment_form=comment_form, comments=all_comments_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
