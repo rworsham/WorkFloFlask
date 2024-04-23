@@ -10913,7 +10913,8 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
   }
 }
 .dashboard-scroll {
-    overflow-x: scroll;
+    overflow-x: auto;
     width: 100%;
+    height: 93vh;
 }
 }

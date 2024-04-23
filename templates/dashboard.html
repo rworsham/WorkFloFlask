@@ -148,7 +148,7 @@
                                     {% endfor %}
                                 {% endfor %}
                               {% endif %}
-                              <form method="post">
+                              <form method="post" novalidate>
                                   <dl>
                                       {{ render_field(comment_form.comment) }}
                                       {{ comment_form.post_id(value=todo.id) }}

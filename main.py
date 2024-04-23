@@ -12,7 +12,7 @@ from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
 import smtplib
 from email.message import EmailMessage
-from datetime import date
+from datetime import date, datetime
 
 app = Flask(__name__)
 app.secret_key = "rob"
@@ -231,18 +231,16 @@ def dashboard():
         db.session.add(new_state)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    if comment_form.submit_comment and comment_form.validate() and request.method == "POST":
-
-        # print(f"This is the form data{comment_form.post_id.data}")
-        new_comment = Comment(
-            text=comment_form.comment.data,
-            date=date.today().strftime("%b %d, %Y %H:%M: %p"),
-            comment_author=current_user,
-            post_id=comment_form.post_id.data
-        )
-        print("NEw comment")
-        db.session.add(new_comment)
-        db.session.commit()
+    if comment_form.submit_comment and request.method == "POST":
+        if comment_form.validate():
+            new_comment = Comment(
+                text=comment_form.comment.data,
+                date=datetime.now().strftime("%b/%d/%Y | %I:%M:%p"),
+                comment_author=current_user,
+                post_id=comment_form.post_id.data
+            )
+            db.session.add(new_comment)
+            db.session.commit()
         return redirect(url_for('dashboard'))
     return render_template("dashboard.html", form=form, work_state_form=work_state_form,
                            work_states=all_work_state_list, todos=todos_list, comment_form=comment_form, comments=all_comments_list)
