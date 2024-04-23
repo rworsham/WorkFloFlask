@@ -155,11 +155,14 @@
                                       {{ render_field(comment_form.submit_comment) }}
                                   </dl>
                               </form>
-
                           </div>
                       </div>
                       <div class="modal-footer">
-
+                            {% if current_user.is_authenticated: %}
+                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                <div class="text-center"><a class="btn btn-outline-danger mt-auto card-button" href="{{ url_for('delete', id=todo.id) }}">Delete</a></div>
+                            </div>
+                            {% endif %}
                       </div>
                     </div>
                   </div>
@@ -194,17 +197,13 @@
                                         <small>{{ todo.project.project }}</small>
                                         <small>{{ todo.author.name }}</small>
                                     </div>
-
                                   </a>
                                         {% endif %}
                                     {% endfor %}
                                     {% endfor %}
                                 </div>
-
                               </div>
-
                         </div>
-
                             {% endfor %}
                         {% endfor %}
                     </div>

@@ -247,6 +247,7 @@ def dashboard():
 
 
 @app.route('/projects', methods=['GET', 'POST'])
+@login_required
 def projects():
     form = ProjectForm()
     all_projects = Project.query.order_by(Project.id).all()
@@ -268,13 +269,41 @@ def projects():
 
 
 @app.route('/overview')
+@login_required
 def overview():
     return render_template('overview.html')
 
 
 @app.route('/events', methods=['GET', 'POST'])
+@login_required
 def events():
     return render_template('events.html')
+
+
+@app.route("/delete/<int:id>")
+@login_required
+def delete(id):
+    todo_to_delete = db.get_or_404(TodoPost, id)
+    db.session.delete(todo_to_delete)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+
+@app.route("/delete/<int:id>")
+@login_required
+def delete_comment(id):
+    comment_to_delete = db.get_or_404(Comment, id)
+    db.session.delete(comment_to_delete)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route("/delete/<int:id>")
+@login_required
+def delete_project(id):
+    project_to_delete = db.get_or_404(Project, id)
+    db.session.delete(project_to_delete)
+    db.session.commit()
+    return redirect(url_for('projects'))
 
 
 if __name__ == '__main__':
