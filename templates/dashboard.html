@@ -6,6 +6,7 @@
         <meta name="description" content="" />
         <meta name="author" content="" />
         <title>WorkFlo</title>
+        <link rel="icon" href="static/assets/favicon.svg" type="image/svg+xml">
         <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <link href="static/css/styles.css" rel="stylesheet" />
@@ -112,29 +113,37 @@
                       </div>
                       <div class="modal-body">
                             <div class="row">
-                              <div class="col-md-4">
+                              <div class="col-md-4 fst-italic">
                                   {{ todo.subtitle }}
                               </div>
-                              <div class="col-md-3 ms-auto">
+                              <div class="col-md-3 ms-auto fst-italic">
                                   ID# {{ todo.id }}
                               </div>
                                 <span class="border-bottom border-secondary"></span>
                             </div>
                           <div class="row">
-                              <div class="col-md-3 ms-auto align-top">
+                              <div class="col-md-3 ms-auto fst-italic align-top">
                               Created By:{{ todo.author.name }}
                               </div>
                           </div>
-                          <div class="row pt-5">
-                            <div class="border rounded content col-md-10">
-                              {{ todo.body }}
-                            </div>
-                            <div class="col-md-1">
+                          <div class="row pt-3">
+                              <div class="col-md-3 ms-auto justify-space-between">
                                 <button class="btn btn-secondary file_upload"><i class="bi bi-file-earmark-plus"></i></button>
-                            </div>
-                            <div class="col-md-1">
                                 <button class="btn btn-primary file_upload"><i class="bi bi-file-arrow-up"></i></button>
                             </div>
+                          </div>
+                          <div class="row pt-1">
+                            <div class="border rounded content col-md-9 overflow-auto">
+                              {{ todo.body }}
+                            </div>
+                              <div class="col-md-3">
+                                <div class="list-group-flush">
+                                  <li class="list-group-item"><a href="" class="text-reset">examplefiledownload.pdf</a></li>
+                                  <li class="list-group-item"><a href="" class="text-reset">examplefiledownload.txt</a></li>
+                                  <li class="list-group-item"><a href="" class="text-reset">examplefiledownload.png</a></li>
+                                  <li class="list-group-item"><a href="" class="text-reset">examplefiledownload.jpeg</a></li>
+                                </div>
+                              </div>
                           </div>
                           <div class="row">
                               {% if todo.comments %}
@@ -142,13 +151,13 @@
                                 {% for row in comments %}
                                     {% for comment in row %}
                                         {% if comment.post_id == todo.id %}
-                                        <div class="list-group pt-1">
+                                        <div class="list-group-flush pt-2">
                                             <a class="list-group-item list-group-item-action flex-column align-items-start ">
-                                            <div class="d-flex w-100 justify-content-between">
-                                              <h5 class="mb-1">{{ comment.comment_author.name }}</h5>
-                                              <small class="text-muted">{{ comment.date }}</small>
+                                            <div class="d-flex w-100 align-bottom">
+                                              <p class="mb-1 fs-5 fw-medium">{{ comment.comment_author.name }}<small class="text-muted mb-1 fs-6 fw-light">    {{ comment.date }}</small></p>
+
                                             </div>
-                                            <p class="mb-1">{{ comment.text }}</p>
+                                            <p class="mb-1 fst-italic">{{ comment.text }}</p>
                                           </a>
                                         </div>
                                         {% endif %}
@@ -201,7 +210,7 @@
                                       <strong class="mb-1">{{ todo.title }}</strong>
                                       <small>{{ todo.date }}</small>
                                     </div>
-                                      <div class="col-8 mb-1 small text-decoration-underline">{{ todo.subtitle }}</div>
+                                      <div class="col-8 mb-1 small fst-italic">{{ todo.subtitle }}</div>
                                     <div class="d-flex w-100 align-items-center justify-content-between">
                                         <small>{{ todo.project.project }}</small>
                                         <small>{{ todo.author.name }}</small>
