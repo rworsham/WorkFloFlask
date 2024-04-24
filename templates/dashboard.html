@@ -125,18 +125,25 @@
                               Created By:{{ todo.author.name }}
                               </div>
                           </div>
-                          <div class="row py-5">
-                            <div class="col-md-8">
+                          <div class="row pt-5">
+                            <div class="border rounded content col-md-10">
                               {{ todo.body }}
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-secondary file_upload"><i class="bi bi-file-earmark-plus"></i></button>
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-primary file_upload"><i class="bi bi-file-arrow-up"></i></button>
                             </div>
                           </div>
                           <div class="row">
                               {% if todo.comments %}
+                              <span class="border-bottom border-secondary py-2"></span>
                                 {% for row in comments %}
                                     {% for comment in row %}
                                         {% if comment.post_id == todo.id %}
-                                        <div class="list-group">
-                                            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                        <div class="list-group pt-1">
+                                            <a class="list-group-item list-group-item-action flex-column align-items-start ">
                                             <div class="d-flex w-100 justify-content-between">
                                               <h5 class="mb-1">{{ comment.comment_author.name }}</h5>
                                               <small class="text-muted">{{ comment.date }}</small>
@@ -148,6 +155,8 @@
                                     {% endfor %}
                                 {% endfor %}
                               {% endif %}
+
+                              <span class="border-bottom border-secondary py-4"></span>
                               <form method="post" novalidate>
                                   <dl>
                                       {{ render_field(comment_form.comment) }}

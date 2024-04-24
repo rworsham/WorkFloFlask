@@ -10917,4 +10917,10 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
     width: 100%;
     height: 93vh;
 }
+.content {
+ height:30vh;
+}
+.file_upload {
+ width: 75px !important;
+}
 }
