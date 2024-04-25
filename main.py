@@ -82,9 +82,9 @@ class Comment(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
-    author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
+    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     comment_author = relationship("User", back_populates="comments")
-    post_id: Mapped[int] = mapped_column(Integer,db.ForeignKey("todo_posts.id"))
+    post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"), nullable=True)
     parent_post = relationship("TodoPost", back_populates="comments")
 
 
@@ -289,7 +289,7 @@ def delete(id):
     return redirect(url_for('dashboard'))
 
 
-@app.route("/delete/<int:id>")
+@app.route("/delete_comment/<int:id>")
 @login_required
 def delete_comment(id):
     comment_to_delete = db.get_or_404(Comment, id)
@@ -297,7 +297,7 @@ def delete_comment(id):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-@app.route("/delete/<int:id>")
+@app.route("/delete_project/<int:id>")
 @login_required
 def delete_project(id):
     project_to_delete = db.get_or_404(Project, id)
