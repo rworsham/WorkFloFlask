@@ -10917,6 +10917,11 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
     width: 100%;
     height: 93vh;
 }
+.todo-scroll {
+    overflow-y: auto;
+    width: 100%;
+    height: 93vh;
+}
 .content {
  height:30vh;
 }

@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Boolean, ForeignKey, Text, DATE
+from sqlalchemy import Integer, String, Boolean, ForeignKey, Text, DATE, desc
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -116,7 +116,6 @@ class RegistrationForm(FlaskForm):
 
 class CommentForm(Form):
     comment = CKEditorField("Comment", validators=[DataRequired()])
-    post_id = HiddenField("Post Id")
     submit_comment = SubmitField("Submit Comment")
 
 
@@ -194,8 +193,6 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    all_comments = Comment.query.order_by(Comment.post_id).all()
-    all_comments_list = [all_comments]
     all_work_states = WorkState.query.order_by(WorkState.work_state_order).all()
     all_work_state_list = [all_work_states]
     todos = TodoPost.query.order_by(TodoPost.work_state).all()
@@ -206,7 +203,6 @@ def dashboard():
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     form = CreateTodoForm()
     work_state_form = WorkStateForm()
-    comment_form = CommentForm(request.form)
     form.project.choices = projects_list
     form.work_state.choices = work_state_list
     if form.submit.data and form.validate_on_submit():
@@ -222,7 +218,6 @@ def dashboard():
         db.session.add(new_todo)
         db.session.commit()
         return redirect(url_for('dashboard'))
-        pass
     if work_state_form.save.data and work_state_form.validate_on_submit():
         new_state = WorkState(
             work_state=work_state_form.work_state.data,
@@ -231,19 +226,30 @@ def dashboard():
         db.session.add(new_state)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    if comment_form.submit_comment and request.method == "POST":
-        if comment_form.validate():
-            new_comment = Comment(
-                text=comment_form.comment.data,
-                date=datetime.now().strftime("%b/%d/%Y | %I:%M:%p"),
-                comment_author=current_user,
-                post_id=comment_form.post_id.data
-            )
-            db.session.add(new_comment)
-            db.session.commit()
-        return redirect(url_for('dashboard'))
     return render_template("dashboard.html", form=form, work_state_form=work_state_form,
-                           work_states=all_work_state_list, todos=todos_list, comment_form=comment_form, comments=all_comments_list)
+                           work_states=all_work_state_list, todos=todos_list,)
+
+
+@app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
+@login_required
+def work_view(id):
+    form = CommentForm(request.form)
+    comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
+    comment_list = [comment_results]
+    print(comment_list)
+    result = db.session.query(TodoPost).where(TodoPost.id == id)
+    todo = result.scalar()
+    if request.method == "POST":
+        new_comment = Comment(
+            text=form.comment.data,
+            date=datetime.now().strftime("%b/%d/%Y | %I:%M:%p"),
+            comment_author=current_user,
+            post_id=id
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+        return redirect(url_for('work_view', id=id))
+    return render_template('todo.html', todo=todo, form=form, comments=comment_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
