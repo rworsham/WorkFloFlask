@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField, HiddenField, Form
+from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField
 from wtforms.validators import DataRequired, URL, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -114,9 +114,9 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField("Sign Up")
 
 
-class CommentForm(Form):
-    comment = CKEditorField("Comment", validators=[DataRequired()])
+class CommentForm(FlaskForm):
     submit_comment = SubmitField("Submit Comment")
+    comment = CKEditorField(" ",validators=[DataRequired()])
 
 
 class ProjectForm(FlaskForm):
@@ -124,11 +124,15 @@ class ProjectForm(FlaskForm):
     submit = SubmitField("Save")
 
 
-class WorkStateForm(FlaskForm):
+class CreateWorkStateForm(FlaskForm):
     work_state = StringField("WorkFlo Name", validators=[DataRequired()])
     work_state_order = IntegerField("WorkFlo Order: 1 Through etc.", validators=[NumberRange(min=1),DataRequired()])
     save = SubmitField("Save")
 
+
+class WorkStateChange(FlaskForm):
+    work_state = SelectField(" ", coerce=int, validators=[InputRequired()])
+    save = SubmitField("Save")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -202,7 +206,7 @@ def dashboard():
     available_work_states = db.session.query(WorkState).all()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     form = CreateTodoForm()
-    work_state_form = WorkStateForm()
+    work_state_form = CreateWorkStateForm()
     form.project.choices = projects_list
     form.work_state.choices = work_state_list
     if form.submit.data and form.validate_on_submit():
@@ -233,15 +237,25 @@ def dashboard():
 @app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
 @login_required
 def work_view(id):
-    form = CommentForm(request.form)
+    available_work_states = db.session.query(WorkState).all()
+    comment_form = CommentForm()
     comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
     comment_list = [comment_results]
-    print(comment_list)
+    work_state_form = WorkStateChange()
+    work_state_list = [(i.id, i.work_state) for i in available_work_states]
+    work_state_form.work_state.choices = work_state_list
     result = db.session.query(TodoPost).where(TodoPost.id == id)
     todo = result.scalar()
-    if request.method == "POST":
+    todo_post = db.get_or_404(TodoPost, id)
+    current_work_state = db.session.query(WorkState).where(WorkState.id == todo.work_state).scalar()
+    current_work_state_name = current_work_state.work_state
+    if work_state_form.save.data and work_state_form.validate_on_submit:
+        todo_post.work_state = work_state_form.work_state.data
+        db.session.commit()
+        return redirect(url_for('work_view', id=id))
+    if comment_form.submit_comment.data and comment_form.validate_on_submit():
         new_comment = Comment(
-            text=form.comment.data,
+            text=comment_form.comment.data,
             date=datetime.now().strftime("%b/%d/%Y | %I:%M:%p"),
             comment_author=current_user,
             post_id=id
@@ -249,7 +263,7 @@ def work_view(id):
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for('work_view', id=id))
-    return render_template('todo.html', todo=todo, form=form, comments=comment_list)
+    return render_template('todo.html', todo=todo, work_state_change_form=work_state_form,current_work_state=current_work_state_name, comment_form=comment_form, comments=comment_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])

@@ -12,7 +12,7 @@
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     </head>
     <body>
-    {% from "bootstrap5/form.html" import render_field %}
+    {% from "bootstrap5/form.html" import render_form %}
         <div class="d-flex" id="wrapper">
             <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
@@ -28,8 +28,9 @@
             <div id="page-content-wrapper">
                 <!-- Top navigation-->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                    <div class="container-fluid">
+                    <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#select_work_state"><a class="btn-link-decor-none"><i class="bi bi-arrows-expand-vertical"></i> Select Work State</a></button>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
@@ -49,70 +50,93 @@
                     </div>
                 </nav>
                 <!-- Page content-->
-                <div class="todo-scroll">
-                    <header class="masthead bg-light-subtle" >
-                      <div class="container position-relative px-4 px-lg-5">
-                        <div class="row gx-4 gx-lg-5 justify-content-center">
-                          <div class="col-md-10 col-lg-8 col-xl-7">
-                            <div class="post-heading">
-                              <h1>{{ todo.title }}</h1>
-                              <h2 class="subheading fst-italic">{{ todo.subtitle }}</h2>
-                              <span>
-                                <p class="fst-italic border-bottom border-secondary py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
-                              </span>
-                            </div>
+                 <div class="modal fade" id="select_work_state" tabindex="-1" aria-labelledby="select_work_state-label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="add-todo-label">Select Work State</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        {% with messages = get_flashed_messages() %}
+                          {% if messages %}
+                          {% for message in messages %}
+                          <p class="flash">{{ message }}</p>
+                          {% endfor %}
+                          {% endif %}
+                          {% endwith %}
+                          <div class="col-lg-8 col-md-10 mx-auto">
+                              <p class="fs-5">{{ current_work_state }}</p>
+                              <div class="fs-2"><i class="bi bi-arrow-down"></i></div>
+                            {{ render_form(work_state_change_form, novalidate=True,button_map={"submit": "dark"}) }}
                           </div>
+                      </div>
+                      <div class="modal-footer">
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="todo-scroll">
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-2 pt-2 border">
+                          placholder
+
+                      </div>
+                      <div class="col-md-8 pt-2 border">
+                        <div class="post-heading">
+                          <h1>{{ todo.title }}</h1>
+                          <h2 class="subheading fst-italic">{{ todo.subtitle }}</h2>
+                            <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
+                            <hr>
                         </div>
                       </div>
-                    </header>
-                    <div class="container-fluid">
-                        <article>
-                          <div class="container px-4 px-lg-5 rounded">
-                            <div class="row gx-4 gx-lg-5 justify-content-center">
-                              <div class="col-md-10 col-lg-8 col-xl-7">
-                                {{ todo.body|safe }}
-                                {% if current_user.id == 1 %}
-                                <div class="d-flex justify-content-end mb-4">
-                                  <a
-                                    class="btn btn-primary float-right"
-                                    href=""
-                                    >Edit Post</a
-                                  >
-                                </div>
-                                {% endif %}
-                               <div class="row">
-                                  {% if todo.comments %}
-                                  <span class="border-bottom border-secondary py-2"></span>
-                                    {% for row in comments %}
-                                        {% for comment in row %}
-                                            {% if comment.post_id == todo.id %}
-                                            <div class="list-group-flush overflow-auto pt-2">
-                                                <a class="list-group-item list-group-item-action flex-column align-items-start ">
-                                                <div class="d-flex w-100 align-bottom">
-                                                  <p class="mb-1 fs-5 fw-medium">{{ comment.comment_author.name }}<small class="text-muted mb-1 fs-6 fw-light">    {{ comment.date }}</small></p>
-
-                                                </div>
-                                                <p class="mb-1 fst-italic">{{ comment.text }}</p>
-                                              </a>
-                                            </div>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endfor %}
-                                  {% endif %}
-
-                                  <span class="border-bottom border-secondary py-4"></span>
-                                  <form method="POST" novalidate>
-                                      <dl>
-                                          {{ render_field(form.comment) }}
-                                          {{ render_field(form.submit_comment) }}
-                                      </dl>
-                                  </form>
-                              </div>
-                              </div>
-                            </div>
-                          </div>
-                        </article>
+                      <div class="col-md-2 pt-2 border">
+                        Placeholder
+                      </div>
                     </div>
+                  </div>
+                  <div class="container-fluid rounded">
+                    <div class="row gx-4">
+                      <div class="col-md-2 border">
+                          placeholder
+                      </div>
+                      <div class="col-md-7 border">
+                        {{ todo.body|safe }}
+                          <hr>
+                        {% if current_user.id == 1 %}
+                        <div class="d-flex justify-content-end mb-4">
+                          <a
+                            class="btn btn-secondary float-right"
+                            href=""
+                            >Edit Post</a
+                          >
+                        </div>
+                      </div>
+                        {% endif %}
+                        {% if todo.comments %}
+                        <div class="col-md-3 comment-scroll border border-secondary rounded pt-1 border">
+                            {{ render_form(comment_form, novalidate=True,button_map={"submit_comment": "secondary"}) }}
+                            {% for row in comments %}
+                                {% for comment in row %}
+                                    {% if comment.post_id == todo.id %}
+                                    <div class="list-group-flush overflow-auto pt-2">
+                                        <a class="list-group-item list-group-item-action flex-column align-items-start ">
+                                        <div class="d-flex w-100 align-bottom">
+                                          <p class="mb-1 fs-5 fw-medium">{{ comment.comment_author.name }}<small class="text-muted mb-1 fs-6 fw-light">    {{ comment.date }}</small></p>
+
+                                        </div>
+                                        <p class="mb-1 fst-italic">{{ comment.text }}</p>
+                                      </a>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                          {% endif %}
+                        </div>
+                    </div>
+                  </div>
                 </div>
             </div>
         </div>
