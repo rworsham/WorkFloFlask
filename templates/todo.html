@@ -100,7 +100,7 @@
                   <div class="container-fluid rounded">
                     <div class="row gx-4">
                       <div class="col-md-2 border">
-                          placeholder
+                          placeholder file
                       </div>
                       <div class="col-md-7 border">
                         {{ todo.body|safe }}
@@ -115,9 +115,10 @@
                         </div>
                       </div>
                         {% endif %}
-                        {% if todo.comments %}
+
                         <div class="col-md-3 comment-scroll border border-secondary rounded pt-1 border">
                             {{ render_form(comment_form, novalidate=True,button_map={"submit_comment": "secondary"}) }}
+                            {% if todo.comments %}
                             {% for row in comments %}
                                 {% for comment in row %}
                                     {% if comment.post_id == todo.id %}

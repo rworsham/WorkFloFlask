@@ -1,4 +1,5 @@
-from flask import Flask, render_template, url_for, redirect, request, flash
+import os
+from flask import Flask, render_template, url_for, redirect, request, flash, send_from_directory
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, EmailField, PasswordField, SelectField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, InputRequired
@@ -10,9 +11,14 @@ from sqlalchemy import Integer, String, ForeignKey, Text, desc
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import smtplib
 from email.message import EmailMessage
 from datetime import date, datetime
+
+UPLOAD_FOLDER = '/uploads'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
 
 app = Flask(__name__)
 app.secret_key = "rob"
@@ -22,7 +28,8 @@ login_manager = LoginManager()
 class Base(DeclarativeBase):
     pass
 
-
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
@@ -51,6 +58,15 @@ class TodoPost(db.Model):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     author = relationship("User",back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
+    files = relationship("Files", back_populates="parent_post")
+
+
+class Files(db.Model):
+    __tablename__ = "files"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    filename: Mapped[str] = mapped_column(String(100), nullable=False)
+    parent_post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"), nullable=True)
+    parent_post = relationship("TodoPost", back_populates="files")
 
 
 class Project(db.Model):
@@ -133,6 +149,12 @@ class CreateWorkStateForm(FlaskForm):
 class WorkStateChange(FlaskForm):
     work_state = SelectField(" ", coerce=int, validators=[InputRequired()])
     save = SubmitField("Save")
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -325,6 +347,32 @@ def delete_project(id):
     db.session.commit()
     return redirect(url_for('projects'))
 
+
+@app.route('/upload<int:id>', methods=['GET', 'POST'])
+@login_required
+def upload_file(id):
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('download_file', name=filename))
+    return
+
+
+@app.route('/uploads/<name>')
+@login_required
+def download_file(name):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
 if __name__ == '__main__':
     app.run(debug=True)
