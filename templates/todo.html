@@ -121,11 +121,10 @@
                             {% for row in comments %}
                                 {% for comment in row %}
                                     {% if comment.post_id == todo.id %}
-                                    <div class="list-group-flush overflow-auto pt-2">
+                                    <div class="list-group overflow-auto pt-1">
                                         <a class="list-group-item list-group-item-action flex-column align-items-start ">
                                         <div class="d-flex w-100 align-bottom">
                                           <p class="mb-1 fs-5 fw-medium">{{ comment.comment_author.name }}<small class="text-muted mb-1 fs-6 fw-light">    {{ comment.date }}</small></p>
-
                                         </div>
                                         <p class="mb-1 fst-italic">{{ comment.text }}</p>
                                       </a>

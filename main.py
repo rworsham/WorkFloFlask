@@ -1,12 +1,12 @@
 from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, EmailField, PasswordField, SelectField, IntegerField
-from wtforms.validators import DataRequired, URL, NumberRange, InputRequired
+from wtforms import StringField, SubmitField, EmailField, PasswordField, SelectField, IntegerField
+from wtforms.validators import DataRequired, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Boolean, ForeignKey, Text, DATE, desc
+from sqlalchemy import Integer, String, ForeignKey, Text, desc
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
