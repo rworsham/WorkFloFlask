@@ -249,11 +249,11 @@ a {
   text-decoration: underline;
 }
 a:hover {
-  text-decoration: none;
+  color: var(--bs-link-hover-color);
 }
 
 a:not([href]):not([class]), a:not([href]):not([class]):hover {
-  color: white;
+  color: inherit;
   text-decoration: none;
 }
 

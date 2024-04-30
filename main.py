@@ -16,7 +16,7 @@ import smtplib
 from email.message import EmailMessage
 from datetime import date, datetime
 
-UPLOAD_FOLDER = '/uploads'
+UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
@@ -65,6 +65,7 @@ class Files(db.Model):
     __tablename__ = "files"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     filename: Mapped[str] = mapped_column(String(100), nullable=False)
+    filepath: Mapped[str] = mapped_column(String(250), nullable=False)
     parent_post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"), nullable=True)
     parent_post = relationship("TodoPost", back_populates="files")
 
@@ -263,6 +264,8 @@ def work_view(id):
     comment_form = CommentForm()
     comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
     comment_list = [comment_results]
+    file_results = db.session.query(Files).where(Files.parent_post_id == id).order_by(desc(Files.id)).all()
+    file_list = [i.filename for i in file_results]
     work_state_form = WorkStateChange()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     work_state_form.work_state.choices = work_state_list
@@ -285,7 +288,32 @@ def work_view(id):
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for('work_view', id=id))
-    return render_template('todo.html', todo=todo, work_state_change_form=work_state_form,current_work_state=current_work_state_name, comment_form=comment_form, comments=comment_list)
+    if request.method == "POST":
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            print(filename)
+            print(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            new_file = Files(
+                filename=filename,
+                filepath=os.path.abspath(filename),
+                parent_post_id=id
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            return redirect(url_for('work_view', id=id))
+            # return redirect(url_for('download_file', name=filename))
+    return render_template('todo.html', todo=todo, work_state_change_form=work_state_form,current_work_state=current_work_state_name, comment_form=comment_form, comments=comment_list, files=file_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])

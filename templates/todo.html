@@ -80,29 +80,40 @@
                 <div class="todo-scroll">
                   <div class="container-fluid">
                     <div class="row">
-                      <div class="col-md-2 pt-2 border">
-                          placholder
+                      <div class="col-md-2 pt-2">
 
                       </div>
-                      <div class="col-md-8 pt-2 border">
+                      <div class="col-md-7 pt-2 d-flex justify-content-center text-center">
                         <div class="post-heading">
                           <h1>{{ todo.title }}</h1>
                           <h2 class="subheading fst-italic">{{ todo.subtitle }}</h2>
-                            <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
-                            <hr>
+
                         </div>
                       </div>
-                      <div class="col-md-2 pt-2 border">
-                        Placeholder
+                      <div class="col-md-2 pt-2">
+                        <h4 class="fst-italic">{{ current_work_state }}</h4>
                       </div>
                     </div>
                   </div>
-                  <div class="container-fluid rounded">
+                  <div class="container-fluid border border-secondary-subtle rounded">
                     <div class="row gx-4">
-                      <div class="col-md-2 border">
-                          placeholder file
+                      <div class="col-md-2">
+                        <form method=post enctype=multipart/form-data class="pt-1">
+                          <input class="form-control form-control-sm" type=submit value=Upload>
+                          <input class="form-control form-control-sm" type=file name=file>
+                        </form>
+                      {% if todo.files %}
+                          {% for file in files %}
+                        <div class="list-group-flush overflow-auto pt-1">
+                            <a href="#" class="list-group-item list-group-item-action flex-column d-flex justify-content-center text-center"><small>{{ file }}</small></a>
+
+
+                        </div>
+                          {% endfor %}
+                      {% endif %}
                       </div>
-                      <div class="col-md-7 border">
+                      <div class="col-md-7 border border-secondary-subtle rounded pt-2">
+                          <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
                         {{ todo.body|safe }}
                           <hr>
                         {% if current_user.id == 1 %}
@@ -116,7 +127,7 @@
                       </div>
                         {% endif %}
 
-                        <div class="col-md-3 comment-scroll border border-secondary rounded pt-1 border">
+                        <div class="col-md-3 comment-scroll border border-secondary-subtle rounded pt-1 border">
                             {{ render_form(comment_form, novalidate=True,button_map={"submit_comment": "secondary"}) }}
                             {% if todo.comments %}
                             {% for row in comments %}
