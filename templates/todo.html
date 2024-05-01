@@ -30,7 +30,7 @@
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                     <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
-                        <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#select_work_state"><i class="bi bi-arrows-expand-vertical"></i> Select Work State</button>
+                        <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#select_work_state"><i class="bi bi-arrows-expand-vertical"></i> Change Work State</button>
                         <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#edit-todo"><i class="bi bi-pencil-square"></i> Edit</button>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -55,7 +55,7 @@
                   <div class="modal-dialog">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="add-todo-label">Select Work State</h1>
+                        <h1 class="modal-title fs-5" id="add-todo-label">Change Work State</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
@@ -66,7 +66,7 @@
                           {% endfor %}
                           {% endif %}
                           {% endwith %}
-                          <div class="col-lg-8 col-md-10 mx-auto">
+                          <div class="col-lg-8 col-md-10 mx-auto ">
                               <p class="fs-5">{{ current_work_state }}</p>
                               <div class="fs-2"><i class="bi bi-arrow-down"></i></div>
                             {{ render_form(work_state_change_form, novalidate=True,button_map={"save_updates": "success"}) }}
@@ -106,24 +106,26 @@
                 <div class="todo-scroll">
                   <div class="container-fluid">
                     <div class="row">
-                      <div class="col-md-2 pt-2">
-
+                      <div class="col-md-2 pt-2 border border-bottom-0 border-start-0 border-secondary-subtle rounded-top">
+                        <h1 class="fst-italic">{{ current_work_state }}</h1>
                       </div>
-                      <div class="col-md-7 pt-2 d-flex justify-content-center text-center">
+                      <div class="col-md-7 pt-2 d-flex justify-content-center text-center border border-bottom-0 border-start-0 border-end-0 border-secondary-subtle rounded-top">
                         <div class="post-heading">
                           <h1 class="text-decoration-underline">{{ todo.title }}</h1>
                           <h3 class="subheading fst-italic">{{ todo.subtitle }}</h3>
 
                         </div>
                       </div>
-                      <div class="col-md-2 pt-2">
-                        <h4 class="fst-italic">{{ current_work_state }}</h4>
+                      <div class="col-md-3 pt-2 border border-bottom-0 border-secondary-subtle rounded-top ">
+                          <div>
+                              {{ render_form(comment_form, novalidate=True,button_map={"submit_comment": "secondary"}) }}
+                          </div>
                       </div>
                     </div>
                   </div>
-                  <div class="container-fluid border border-secondary-subtle rounded">
+                  <div class="container-fluid">
                     <div class="row gx-4">
-                      <div class="col-md-2">
+                      <div class="col-md-2 border border-top-0 border-start-0 border-secondary-subtle rounded-bottom">
                         <form method=post enctype=multipart/form-data class="pt-1">
                           <input class="form-control form-control-sm bg-secondary upload" type=submit value=Upload>
                           <input class="form-control form-control-sm" type=file name=file>
@@ -131,30 +133,21 @@
                       {% if todo.files %}
                           {% for file in files %}
                         <div class="list-group-flush overflow-auto pt-1">
-                            <a href="#" class="list-group-item list-group-item-action flex-column d-flex justify-content-center text-center"><small>{{ file }}</small></a>
+                            <a href="#" class="list-group-item list-group-item-action flex-column d-flex justify-content-center text-center"><small>{{ file.filename }}{{ file.id }}</small></a>
 
 
                         </div>
                           {% endfor %}
                       {% endif %}
                       </div>
-                      <div class="col-md-7 border border-secondary-subtle rounded pt-2">
+                      <div class="col-md-7 border border-top-0 border-start-0 border-end-0 border-secondary-subtle rounded-bottom pt-2">
+                          <hr>
                           <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
                         {{ todo.body|safe }}
                           <hr>
-                        {% if current_user.id == 1 %}
-                        <div class="d-flex justify-content-end mb-4">
-                          <a
-                            class="btn btn-secondary float-right"
-                            href=""
-                            >Edit Post</a
-                          >
-                        </div>
                       </div>
-                        {% endif %}
 
-                        <div class="col-md-3 comment-scroll border border-secondary-subtle rounded pt-1 border">
-                            {{ render_form(comment_form, novalidate=True,button_map={"submit_comment": "secondary"}) }}
+                        <div class="col-md-3 comment-scroll border border-top-0 border-secondary-subtle rounded-bottom pt-1">
                             {% if todo.comments %}
                             {% for row in comments %}
                                 {% for comment in row %}

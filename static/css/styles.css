@@ -10936,3 +10936,6 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
 .upload {
   color: white;
 }
+textarea[name=comment] {
+  resize: none;
+}

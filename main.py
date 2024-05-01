@@ -295,7 +295,8 @@ def work_view(id):
     comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
     comment_list = [comment_results]
     file_results = db.session.query(Files).where(Files.parent_post_id == id).order_by(desc(Files.id)).all()
-    file_list = [i.filename for i in file_results]
+    file_list = [(i.id, i.filename) for i in file_results]
+    print(file_list)
     work_state_form = WorkStateChange()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     work_state_form.work_state.choices = work_state_list
@@ -360,7 +361,8 @@ def work_view(id):
                            comment_form=comment_form,
                            edit_form=edit_form,
                            comments=comment_list,
-                           files=file_list)
+                           files=file_list
+                           )
 
 
 @app.route('/projects', methods=['GET', 'POST'])
@@ -424,28 +426,13 @@ def delete_project(id):
     return redirect(url_for('projects'))
 
 
-@app.route('/upload<int:id>', methods=['GET', 'POST'])
+@app.route('/uploads/<int:post_id>/<int:file_id>')
 @login_required
-def upload_file(id):
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('download_file', name=filename))
-    return
-
-
-@app.route('/uploads/<name>')
-@login_required
-def download_file(name):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+def download_file(post_id, file_id):
+     file = db.session.query(Files).where(Files.id == file_id)
+     send_from_directory(file.filepath)
+     return redirect(url_for('work_view', id=post_id))
+# return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
 
 if __name__ == '__main__':
