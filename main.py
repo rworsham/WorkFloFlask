@@ -1,14 +1,17 @@
 import os
-from flask import Flask, render_template, url_for, redirect, request, flash, send_from_directory
+from flask import (Flask, render_template, url_for, redirect,
+                   request, flash, send_from_directory)
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, EmailField, PasswordField, SelectField, IntegerField
+from wtforms import (StringField, SubmitField, EmailField, PasswordField,
+                     SelectField, IntegerField)
 from wtforms.validators import DataRequired, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey, Text, desc
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import (UserMixin, login_user, LoginManager, login_required,
+                         current_user, logout_user)
 from flask_ckeditor import CKEditorField
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -66,7 +69,9 @@ class Files(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     filename: Mapped[str] = mapped_column(String(100), nullable=False)
     filepath: Mapped[str] = mapped_column(String(250), nullable=False)
-    parent_post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"), nullable=True)
+    parent_post_id: Mapped[int] = mapped_column(Integer,
+                                                ForeignKey("todo_posts.id"),
+                                                nullable=True)
     parent_post = relationship("TodoPost", back_populates="files")
 
 
@@ -101,7 +106,8 @@ class Comment(db.Model):
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     comment_author = relationship("User", back_populates="comments")
-    post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"), nullable=True)
+    post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"),
+                                         nullable=True)
     parent_post = relationship("TodoPost", back_populates="comments")
 
 
@@ -112,21 +118,25 @@ with app.app_context():
 class CreateTodoForm(FlaskForm):
     title = StringField("Work Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
-    work_state = SelectField("Select Work State", coerce=int, validators=[InputRequired()])
+    work_state = SelectField("Select Work State", coerce=int,
+                             validators=[InputRequired()])
     body = CKEditorField("Content", validators=[DataRequired()])
-    project = SelectField("Select Project", coerce=int, validators=[InputRequired()])
+    project = SelectField("Select Project",
+                          coerce=int, validators=[InputRequired()])
     submit = SubmitField("Submit Work")
 
 
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField("Password",
+                             validators=[DataRequired()])
     submit = SubmitField("Log In")
 
 
 class RegistrationForm(FlaskForm):
     email = EmailField("Email Address", validators=[DataRequired()])
-    password = PasswordField("Enter Password", validators=[DataRequired()])
+    password = PasswordField("Enter Password",
+                             validators=[DataRequired()])
     name = StringField("Username", validators=[DataRequired()])
     submit = SubmitField("Sign Up")
 
@@ -143,14 +153,24 @@ class ProjectForm(FlaskForm):
 
 class CreateWorkStateForm(FlaskForm):
     work_state = StringField("WorkFlo Name", validators=[DataRequired()])
-    work_state_order = IntegerField("WorkFlo Order: 1 Through etc.", validators=[NumberRange(min=1),DataRequired()])
+    work_state_order = IntegerField("WorkFlo Order: 1 Through etc.",
+                                    validators=[NumberRange(min=1),DataRequired()])
     save = SubmitField("Save")
 
 
 class WorkStateChange(FlaskForm):
-    work_state = SelectField(" ", coerce=int, validators=[InputRequired()])
+    work_state = SelectField(" ", coerce=int,
+                             validators=[InputRequired()])
     save = SubmitField("Save")
 
+
+class EditTodoForm(FlaskForm):
+    todo_title = StringField("Title")
+    todo_subtitle = StringField("Subtitle")
+    todo_body = CKEditorField("Description")
+    todo_project = SelectField("Select Project", coerce=int,
+                               validators=[InputRequired()])
+    save_updates = SubmitField("Save")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -198,7 +218,9 @@ def register():
         new_user = User(
             name=form.name.data,
             email=form.email.data,
-            password=generate_password_hash(password=form.password.data,method="pbkdf2:sha256",salt_length=8)
+            password=generate_password_hash(password=form.password.data,
+                                            method="pbkdf2:sha256",
+                                            salt_length=8)
         )
         if user_name:
             message = "Username already exist, please try again"
@@ -245,6 +267,7 @@ def dashboard():
         db.session.add(new_todo)
         db.session.commit()
         return redirect(url_for('dashboard'))
+
     if work_state_form.save.data and work_state_form.validate_on_submit():
         new_state = WorkState(
             work_state=work_state_form.work_state.data,
@@ -253,14 +276,21 @@ def dashboard():
         db.session.add(new_state)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template("dashboard.html", form=form, work_state_form=work_state_form,
-                           work_states=all_work_state_list, todos=todos_list,)
+    return render_template("dashboard.html",
+                           form=form,
+                           work_state_form=work_state_form,
+                           work_states=all_work_state_list,
+                           todos=todos_list,)
 
 
 @app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
 @login_required
 def work_view(id):
+    edit_form = EditTodoForm()
+    available_projects = db.session.query(Project).all()
+    projects_list = [(i.id, i.project) for i in available_projects]
     available_work_states = db.session.query(WorkState).all()
+    edit_form.todo_project.choices = projects_list
     comment_form = CommentForm()
     comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
     comment_list = [comment_results]
@@ -278,6 +308,7 @@ def work_view(id):
         todo_post.work_state = work_state_form.work_state.data
         db.session.commit()
         return redirect(url_for('work_view', id=id))
+
     if comment_form.submit_comment.data and comment_form.validate_on_submit():
         new_comment = Comment(
             text=comment_form.comment.data,
@@ -288,21 +319,31 @@ def work_view(id):
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for('work_view', id=id))
-    if request.method == "POST":
-        # check if the post request has the file part
+
+    if edit_form.save_updates.data and edit_form.validate_on_submit():
+        if edit_form.todo_title.data:
+            todo_post.title = edit_form.todo_title.data
+            db.session.commit()
+        if edit_form.todo_subtitle:
+            todo_post.subtitle = edit_form.todo_subtitle.data
+            db.session.commit()
+        if edit_form.todo_body:
+            todo_post.body = edit_form.todo_body.data
+            db.session.commit()
+        if edit_form.todo_project.data:
+            todo_post.project_id = int(edit_form.todo_project.data)
+            db.session.commit()
+        else:
+            return redirect(url_for('work_view', id=id))
+
+    if request.files and request.method == "POST":
         if 'file' not in request.files:
-            flash('No file part')
             return redirect(request.url)
         file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
         if file.filename == '':
-            flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print(filename)
-            print(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             new_file = Files(
                 filename=filename,
@@ -313,7 +354,13 @@ def work_view(id):
             db.session.commit()
             return redirect(url_for('work_view', id=id))
             # return redirect(url_for('download_file', name=filename))
-    return render_template('todo.html', todo=todo, work_state_change_form=work_state_form,current_work_state=current_work_state_name, comment_form=comment_form, comments=comment_list, files=file_list)
+    return render_template('todo.html', todo=todo,
+                           work_state_change_form=work_state_form,
+                           current_work_state=current_work_state_name,
+                           comment_form=comment_form,
+                           edit_form=edit_form,
+                           comments=comment_list,
+                           files=file_list)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
@@ -335,7 +382,8 @@ def projects():
         db.session.add(new_project)
         db.session.commit()
         return redirect(url_for('projects'))
-    return render_template('projects.html', form=form, projects=project_list)
+    return render_template('projects.html', form=form,
+                           projects=project_list)
 
 
 @app.route('/overview')
@@ -380,13 +428,10 @@ def delete_project(id):
 @login_required
 def upload_file(id):
     if request.method == 'POST':
-        # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
         file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
@@ -401,6 +446,7 @@ def upload_file(id):
 @login_required
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

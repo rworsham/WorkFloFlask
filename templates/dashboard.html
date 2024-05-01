@@ -30,8 +30,8 @@
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                     <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-todo"><a class="btn-link-decor-none"><i class="bi bi-patch-plus"></i> Add Todo</a></button>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#work-state"><a class="btn-link-decor-none"><i class="bi bi-patch-plus"></i> Add WorkFlo</a></button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-todo"><i class="bi bi-patch-plus"></i> Add Todo</button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#work-state"><i class="bi bi-patch-plus"></i> Add WorkFlo</button>
 
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -68,7 +68,7 @@
                           {% endif %}
                           {% endwith %}
                           <div class="col-lg-8 col-md-10 mx-auto">
-                            {{ render_form(form, novalidate=True,button_map={"submit": "dark"}) }}
+                            {{ render_form(form, novalidate=True,button_map={"submit": "success"}) }}
                           </div>
                       </div>
                       <div class="modal-footer">
@@ -93,7 +93,7 @@
                           {% endif %}
                           {% endwith %}
                           <div class="col-lg-8 col-md-10 mx-auto">
-                            {{ render_form(work_state_form, novalidate=True,button_map={"submit": "dark"}) }}
+                            {{ render_form(work_state_form, novalidate=True,button_map={"save": "success"}) }}
                           </div>
                       </div>
                       <div class="modal-footer">
