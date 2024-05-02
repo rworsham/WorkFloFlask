@@ -32,6 +32,8 @@
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
                         <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#select_work_state"><i class="bi bi-arrows-expand-vertical"></i> Change Work State</button>
                         <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#edit-todo"><i class="bi bi-pencil-square"></i> Edit</button>
+                        {{ render_form(subscribe_form, novalidate=True,button_map={"save_updates": "success"}) }}
+                        {{ render_form(unsubscribe_form, novalidate=True,button_map={"save_updates": "success"}) }}
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
@@ -107,13 +109,14 @@
                   <div class="container-fluid">
                     <div class="row">
                       <div class="col-md-2 pt-2 border border-bottom-0 border-start-0 border-secondary-subtle rounded-top">
-                        <h1 class="fst-italic">{{ current_work_state }}</h1>
+                        <h2 class="fst-italic">{{ current_work_state }}</h2>
+                          <h4 class="fst-italic">{{ current_project }}</h4>
                       </div>
                       <div class="col-md-7 pt-2 d-flex justify-content-center text-center border border-bottom-0 border-start-0 border-end-0 border-secondary-subtle rounded-top">
                         <div class="post-heading">
                           <h1 class="text-decoration-underline">{{ todo.title }}</h1>
                           <h3 class="subheading fst-italic">{{ todo.subtitle }}</h3>
-                            {{ todo.project_id }}
+                            <small class="fst-italic">Due {{ todo.due_date }}</small>
                         </div>
                       </div>
                       <div class="col-md-3 pt-2 border border-bottom-0 border-secondary-subtle rounded-top ">
@@ -142,7 +145,7 @@
                       </div>
                       <div class="col-md-7 border border-top-0 border-start-0 border-end-0 border-secondary-subtle rounded-bottom pt-2">
                           <hr>
-                          <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date }}</p>
+                          <p class="fst-italic  py-1">Posted by {{ todo.author.name }} on {{ todo.date_created }}</p>
                             {{ todo.body|safe }}
                           <hr>
                       </div>

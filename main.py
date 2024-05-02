@@ -3,7 +3,7 @@ from flask import (Flask, render_template, url_for, redirect,
                    request, flash, send_from_directory)
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, EmailField, PasswordField,
-                     SelectField, IntegerField)
+                     SelectField, IntegerField, DateField)
 from wtforms.validators import DataRequired, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +21,8 @@ from datetime import date, datetime
 
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+EMAIL_ADDRESS = 'replace with your email address'
+EMAIL_PASSWORD = 'replace with yellow box password'
 
 
 app = Flask(__name__)
@@ -54,7 +56,8 @@ class TodoPost(db.Model):
     title: Mapped[str] = mapped_column(String(250), nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     work_state: Mapped[int] = mapped_column(Integer)
-    date: Mapped[str] = mapped_column(String(50))
+    date_created: Mapped[str] = mapped_column(String(50))
+    due_date: Mapped[str] = mapped_column(String(50))
     body: Mapped[str] = mapped_column(Text, nullable=False)
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"))
     project = relationship("Project", back_populates="posts")
@@ -62,6 +65,7 @@ class TodoPost(db.Model):
     author = relationship("User",back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
     files = relationship("Files", back_populates="parent_post")
+    subscribed_users = relationship("Subscribed", back_populates="parent_post")
 
 
 class Files(db.Model):
@@ -111,6 +115,17 @@ class Comment(db.Model):
     parent_post = relationship("TodoPost", back_populates="comments")
 
 
+class Subscribed(db.Model):
+    __tablename__ = "subscribed"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_email: Mapped[str] = mapped_column(String(100))
+    post_id: Mapped[int] = mapped_column(Integer, ForeignKey("todo_posts.id"),
+                                         nullable=True)
+    parent_post = relationship("TodoPost", back_populates="subscribed_users")
+
+
+
+
 with app.app_context():
     db.create_all()
 
@@ -121,6 +136,7 @@ class CreateTodoForm(FlaskForm):
     work_state = SelectField("Select Work State", coerce=int,
                              validators=[InputRequired()])
     body = CKEditorField("Content", validators=[DataRequired()])
+    due_date = DateField()
     project = SelectField("Select Project",
                           coerce=int, validators=[InputRequired()])
     submit = SubmitField("Submit Work")
@@ -168,9 +184,19 @@ class EditTodoForm(FlaskForm):
     todo_title = StringField("Title")
     todo_subtitle = StringField("Subtitle")
     todo_body = CKEditorField("Description")
+    todo_due_date = DateField()
     todo_project = SelectField("Select Project", coerce=int,
                                validators=[InputRequired()])
     save_updates = SubmitField("Save")
+
+
+class SubscribeForm(FlaskForm):
+    subscribe = SubmitField("Subscribe to Updates")
+
+
+class UnsubscribeForm(FlaskForm):
+    unsubscribe = SubmitField("Unsubscribe to Updates")
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -259,7 +285,8 @@ def dashboard():
             title=form.title.data,
             subtitle=form.subtitle.data,
             work_state=form.work_state.data,
-            date=date.today().strftime("%B %d, %Y"),
+            date_created=date.today().strftime("%B %d, %Y"),
+            due_date=datetime.strftime(form.due_date.data,"%B %d, %Y"),
             body=form.body.data,
             project_id=form.project.data,
             author=current_user
@@ -286,6 +313,8 @@ def dashboard():
 @app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
 @login_required
 def work_view(id):
+    subscribe = SubscribeForm()
+    unsubscribe = UnsubscribeForm()
     edit_form = EditTodoForm()
     available_projects = db.session.query(Project).all()
     projects_list = ([(i.id, i.project) for i in available_projects])
@@ -305,9 +334,43 @@ def work_view(id):
     todo_post = db.get_or_404(TodoPost, id)
     current_work_state = db.session.query(WorkState).where(WorkState.id == todo.work_state).scalar()
     current_work_state_name = current_work_state.work_state
+    current_project = db.session.query(Project).where(Project.id == todo.project_id).scalar()
+    current_project_name = current_project.project
+    subject = todo.title
     if work_state_form.save.data and work_state_form.validate_on_submit:
         todo_post.work_state = work_state_form.work_state.data
         db.session.commit()
+        message = f'''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body bgcolor="#F5F8FA" style="width: 100%; margin:auto; font-family:Lato, sans-serif; font-size:18px;">
+            <div>
+                <table role="presentation" width="100%">
+                    <tr>
+                        <td bgcolor="#004990" align="center" style="color: white;">
+                            <h1 style="font-size:56px;">{todo.title} ID:{todo.id}</h1>
+                        </td>
+                </table>
+                <table role="presentation" border="0" cellpadding="0" cellspacing="10px" style="padding: 30px 30px 30px 60px;">
+                    <tr>
+                        <td style="vertical-align:top;">
+                            <h2>{todo.title}</h2>
+                            <p>
+                                {current_user.name} changed work state to {current_work_state_name}.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            </body>
+            </html>
+            '''
+        notification(message,"rworsham@dalcom.com",subject)
         return redirect(url_for('work_view', id=id))
 
     if comment_form.submit_comment.data and comment_form.validate_on_submit():
@@ -330,6 +393,9 @@ def work_view(id):
             db.session.commit()
         elif edit_form.todo_body.data:
             todo_post.body = edit_form.todo_body.data
+            db.session.commit()
+        elif edit_form.todo_due_date.data:
+            todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data,"%B %d, %Y")
             db.session.commit()
         elif edit_form.todo_project.data:
             if edit_form.todo_project.data != "":
@@ -359,10 +425,13 @@ def work_view(id):
     return render_template('todo.html', todo=todo,
                            work_state_change_form=work_state_form,
                            current_work_state=current_work_state_name,
+                           current_project=current_project_name,
                            comment_form=comment_form,
                            edit_form=edit_form,
                            comments=comment_list,
-                           files=file_list
+                           files=file_list,
+                           subscribe_form=subscribe,
+                           unsubscribe_form=unsubscribe
                            )
 
 
@@ -418,6 +487,7 @@ def delete_comment(id):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
+
 @app.route("/delete_project/<int:id>")
 @login_required
 def delete_project(id):
@@ -433,6 +503,21 @@ def download_file(post_id, file_id):
     filename_result = db.session.query(Files.filename).where(Files.id == file_id)
     filename = filename_result.scalar()
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+
+def notification(message, reciever, subject):
+    msg = EmailMessage()
+    msg.set_content(message, subtype='html')
+
+    msg['Subject'] = subject
+    msg['From'] = "WorkFlo"
+    msg['To'] = reciever
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login("#emailaddress", "#app password")
+    server.send_message(msg)
+    server.quit()
 
 
 
