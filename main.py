@@ -288,15 +288,15 @@ def dashboard():
 def work_view(id):
     edit_form = EditTodoForm()
     available_projects = db.session.query(Project).all()
-    projects_list = [(i.id, i.project) for i in available_projects]
+    projects_list = ([(i.id, i.project) for i in available_projects])
+    projects_list.insert(0, (0,""))
     available_work_states = db.session.query(WorkState).all()
     edit_form.todo_project.choices = projects_list
     comment_form = CommentForm()
     comment_results = db.session.query(Comment).where(Comment.post_id == id).order_by(desc(Comment.id)).all()
     comment_list = [comment_results]
     file_results = db.session.query(Files).where(Files.parent_post_id == id).order_by(desc(Files.id)).all()
-    file_list = [(i.id, i.filename) for i in file_results]
-    print(file_list)
+    file_list = [file_results]
     work_state_form = WorkStateChange()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
     work_state_form.work_state.choices = work_state_list
@@ -325,17 +325,18 @@ def work_view(id):
         if edit_form.todo_title.data:
             todo_post.title = edit_form.todo_title.data
             db.session.commit()
-        if edit_form.todo_subtitle:
+        elif edit_form.todo_subtitle.data:
             todo_post.subtitle = edit_form.todo_subtitle.data
             db.session.commit()
-        if edit_form.todo_body:
+        elif edit_form.todo_body.data:
             todo_post.body = edit_form.todo_body.data
             db.session.commit()
-        if edit_form.todo_project.data:
-            todo_post.project_id = int(edit_form.todo_project.data)
-            db.session.commit()
-        else:
-            return redirect(url_for('work_view', id=id))
+        elif edit_form.todo_project.data:
+            if edit_form.todo_project.data != "":
+                todo_post.project_id = int(edit_form.todo_project.data)
+                db.session.commit()
+
+        return redirect(url_for('work_view', id=id))
 
     if request.files and request.method == "POST":
         if 'file' not in request.files:
@@ -354,7 +355,7 @@ def work_view(id):
             db.session.add(new_file)
             db.session.commit()
             return redirect(url_for('work_view', id=id))
-            # return redirect(url_for('download_file', name=filename))
+
     return render_template('todo.html', todo=todo,
                            work_state_change_form=work_state_form,
                            current_work_state=current_work_state_name,
@@ -429,10 +430,10 @@ def delete_project(id):
 @app.route('/uploads/<int:post_id>/<int:file_id>')
 @login_required
 def download_file(post_id, file_id):
-     file = db.session.query(Files).where(Files.id == file_id)
-     send_from_directory(file.filepath)
-     return redirect(url_for('work_view', id=post_id))
-# return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+    filename_result = db.session.query(Files.filename).where(Files.id == file_id)
+    filename = filename_result.scalar()
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
 
 
 if __name__ == '__main__':
