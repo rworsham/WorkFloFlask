@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, Text, desc
+from sqlalchemy import Integer, String, ForeignKey, Text, desc, and_
 from flask_login import (UserMixin, login_user, LoginManager, login_required,
                          current_user, logout_user)
 from flask_ckeditor import CKEditorField
@@ -337,6 +337,15 @@ def work_view(id):
     current_project = db.session.query(Project).where(Project.id == todo.project_id).scalar()
     current_project_name = current_project.project
     subject = todo.title
+    subscribed_user_result = db.session.query(Subscribed).where(Subscribed.post_id == id).all()
+    subscribed_user_list = [i.user_email for i in subscribed_user_result]
+    print(subscribed_user_list)
+    if current_user.email in subscribed_user_list:
+        print("True")
+        user_is_subscribed_to_updates=True
+    elif current_user.email not in subscribed_user_list:
+        print("false")
+        user_is_subscribed_to_updates=False
     if work_state_form.save.data and work_state_form.validate_on_submit:
         todo_post.work_state = work_state_form.work_state.data
         db.session.commit()
@@ -370,7 +379,7 @@ def work_view(id):
             </body>
             </html>
             '''
-        notification(message,"rworsham@dalcom.com",subject)
+        notification(message, "rworsham@dalcom.com", subject)
         return redirect(url_for('work_view', id=id))
 
     if comment_form.submit_comment.data and comment_form.validate_on_submit():
@@ -421,6 +430,22 @@ def work_view(id):
             db.session.add(new_file)
             db.session.commit()
             return redirect(url_for('work_view', id=id))
+    if subscribe.subscribe.data:
+        sub_user = Subscribed(
+            user_email=current_user.email,
+            post_id=id
+        )
+        db.session.add(sub_user)
+        db.session.commit()
+        return redirect(url_for('work_view', id=id))
+
+    if unsubscribe.unsubscribe.data:
+        subbed_user = db.session.query(Subscribed).where(Subscribed.post_id == id).where(Subscribed.user_email == current_user.email).scalar()
+        print(subbed_user)
+
+        subbed_user.post_id = ""
+        db.session.commit()
+        return redirect(url_for('work_view', id=id))
 
     return render_template('todo.html', todo=todo,
                            work_state_change_form=work_state_form,
@@ -431,7 +456,8 @@ def work_view(id):
                            comments=comment_list,
                            files=file_list,
                            subscribe_form=subscribe,
-                           unsubscribe_form=unsubscribe
+                           unsubscribe_form=unsubscribe,
+                           user_is_subscribed_to_updates=user_is_subscribed_to_updates
                            )
 
 
