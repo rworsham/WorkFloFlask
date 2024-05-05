@@ -32,7 +32,6 @@
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i>Menu</button>
                         <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#select_work_state"><i class="bi bi-arrows-expand-vertical"></i> Change Work State</button>
                         <button class="btn btn-success " data-bs-toggle="modal" data-bs-target="#edit-todo"><i class="bi bi-pencil-square"></i> Edit</button>
-                        {{user_is_subscribed_to_updates}}
                         {% if user_is_subscribed_to_updates %}
                             {{ render_form(unsubscribe_form, novalidate=True,button_map={"unsubscribe": "success"}) }}
                         {% endif %}
@@ -42,15 +41,15 @@
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-                                <li class="nav-item active"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#!">Link</a></li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
                                         <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
-                                        <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#!">Settings</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
                                     </div>
                                 </li>
                             </ul>

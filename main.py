@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, Text, desc, and_
+from sqlalchemy import Integer, String, ForeignKey, Text, desc
 from flask_login import (UserMixin, login_user, LoginManager, login_required,
                          current_user, logout_user)
 from flask_ckeditor import CKEditorField
@@ -21,8 +21,8 @@ from datetime import date, datetime
 
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-EMAIL_ADDRESS = 'replace with your email address'
-EMAIL_PASSWORD = 'replace with yellow box password'
+EMAIL_ADDRESS = "worshamappmanager@gmail.com"
+EMAIL_PASSWORD = os.getenv("PASSWORD")
 
 
 app = Flask(__name__)
@@ -339,12 +339,9 @@ def work_view(id):
     subject = todo.title
     subscribed_user_result = db.session.query(Subscribed).where(Subscribed.post_id == id).all()
     subscribed_user_list = [i.user_email for i in subscribed_user_result]
-    print(subscribed_user_list)
     if current_user.email in subscribed_user_list:
-        print("True")
         user_is_subscribed_to_updates=True
     elif current_user.email not in subscribed_user_list:
-        print("false")
         user_is_subscribed_to_updates=False
     if work_state_form.save.data and work_state_form.validate_on_submit:
         todo_post.work_state = work_state_form.work_state.data
@@ -379,7 +376,8 @@ def work_view(id):
             </body>
             </html>
             '''
-        notification(message, "rworsham@dalcom.com", subject)
+        for reciever in subscribed_user_list:
+            notification(message, reciever, subject)
         return redirect(url_for('work_view', id=id))
 
     if comment_form.submit_comment.data and comment_form.validate_on_submit():
@@ -484,6 +482,19 @@ def projects():
                            projects=project_list)
 
 
+@app.route('/projects/<int:project_id>', methods=['GET', 'POST'])
+@login_required
+def projects_view(project_id):
+    project = db.get_or_404(Project, project_id)
+    project_todo_result = db.session.query(TodoPost).where(TodoPost.project_id == project_id).all()
+    project_todo_list = [project_todo_result]
+    available_work_states = db.session.query(WorkState).all()
+    work_state_list = [(i.id, i.work_state) for i in available_work_states]
+    print(work_state_list)
+    return render_template('project_view.html', project=project, project_list=project_todo_list, work_states=work_state_list)
+
+
+
 @app.route('/overview')
 @login_required
 def overview():
@@ -541,7 +552,7 @@ def notification(message, reciever, subject):
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login("#emailaddress", "#app password")
+    server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
     server.send_message(msg)
     server.quit()
 
