@@ -419,7 +419,9 @@ def work_view(id):
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            if not os.path.exists(f"{UPLOAD_FOLDER}/{id}"):
+                os.makedirs(f"{UPLOAD_FOLDER}/{id}")
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], str(id), filename))
             new_file = Files(
                 filename=filename,
                 filepath=os.path.abspath(filename),
@@ -535,12 +537,13 @@ def delete_project(id):
     return redirect(url_for('projects'))
 
 
-@app.route('/uploads/<int:post_id>/<int:file_id>')
+@app.route('/<int:post_id>/<int:file_id>')
 @login_required
 def download_file(post_id, file_id):
     filename_result = db.session.query(Files.filename).where(Files.id == file_id)
     filename = filename_result.scalar()
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    path = UPLOAD_FOLDER + "/" + str(post_id)
+    return send_from_directory(path, filename)
 
 
 def notification(message, reciever, subject):
