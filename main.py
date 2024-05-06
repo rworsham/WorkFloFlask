@@ -490,9 +490,10 @@ def projects_view(project_id):
     project_todo_list = [project_todo_result]
     available_work_states = db.session.query(WorkState).all()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
-    print(work_state_list)
-    return render_template('project_view.html', project=project, project_list=project_todo_list, work_states=work_state_list)
-
+    return render_template('project_view.html',
+                           project=project,
+                           project_todo_list=project_todo_list,
+                           work_states=work_state_list)
 
 
 @app.route('/overview')
