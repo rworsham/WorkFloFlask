@@ -4,6 +4,7 @@ from flask import (Flask, render_template, url_for, redirect,
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, EmailField, PasswordField,
                      SelectField, IntegerField, DateField)
+from wtforms.widgets import ColorInput
 from wtforms.validators import DataRequired, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
@@ -464,24 +465,23 @@ def work_view(id):
 @app.route('/projects', methods=['GET', 'POST'])
 @login_required
 def projects():
-    form = ProjectForm()
     all_projects = Project.query.order_by(Project.id).all()
     project_list = [all_projects]
-    if form.validate_on_submit():
-        project_name = form.project_name.data
+    if request.method == "POST" and request.form.get('submit'):
+        project_name = request.form.get('ProjectName')
         result = db.session.execute(db.select(Project).where(Project.project == project_name))
         project_name_result = result.scalar()
         if project_name_result:
             flash("That project already exist, please try again")
             return redirect(url_for('projects'))
         new_project = Project(
-            project=form.project_name.data
+            project=request.form.get('ProjectName'),
+            project_color=request.form.get('ColorInput')
         )
         db.session.add(new_project)
         db.session.commit()
         return redirect(url_for('projects'))
-    return render_template('projects.html', form=form,
-                           projects=project_list)
+    return render_template('projects.html', projects=project_list)
 
 
 @app.route('/projects/<int:project_id>', methods=['GET', 'POST'])
