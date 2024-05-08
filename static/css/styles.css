@@ -10920,6 +10920,11 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
     width: auto;
     height: auto;
 }
+.project-todo-scroll {
+    overflow-y: auto;
+    width: auto;
+    max-height: 50;
+}
 .comment-scroll {
     overflow-y: auto;
     height: 75vh;

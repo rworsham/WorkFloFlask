@@ -549,6 +549,11 @@ def download_file(post_id, file_id):
     path = UPLOAD_FOLDER + "/" + str(post_id)
     return send_from_directory(path, filename)
 
+@app.route('/settings', methods=['GET','POST'])
+@login_required
+def settings():
+    return render_template('settings.html')
+
 
 def notification(message, reciever, subject):
     msg = EmailMessage()
