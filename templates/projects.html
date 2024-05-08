@@ -68,14 +68,14 @@
                           {% endwith %}
                             <form class="row g-3" method=post>
                                 <div class="col-10">
-                                    <input class="form-control" type="text" placeholder="ProjectName" id="ProjectName" aria-label="default input example">
+                                    <input class="form-control" type="text" placeholder="ProjectName" name="ProjectName" aria-label="default input example">
                                 </div>
                                 <div class="col-2">
-                                    <input type="color" class="form-control form-control-color" id="ColorInput" value="#563d7c" title="Choose your color">
+                                    <input type="color" class="form-control form-control-color" name="ColorInput" value="#563d7c" title="Choose your color">
                                 </div>
                                 <div class="row g-3 text-center">
                                     <div class="col-md">
-                                        <button type="submit" class="btn btn-success mb-3">Save</button>
+                                        <button type="submit" name="submit" class="btn btn-success mb-3">Save</button>
                                     </div>
                                 </div>
                             </form>
@@ -90,7 +90,7 @@
                        {% for project in row %}
                         <div class="col-lg-2 mt-3">
                             <div class="card ">
-                                <div class="card-header bg-secondary"></div>
+                                <div class="card-header" style="background-color: {{project.project_color}};"></div>
                                     <div class="card-body bg-light">
                                         <h5 class="card-title">{{ project.project }}</h5>
                                         <a href="{{ url_for('projects_view', project_id=project.id) }}" class="stretched-link"></a>

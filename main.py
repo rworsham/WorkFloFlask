@@ -84,6 +84,7 @@ class Project(db.Model):
     __tablename__ = "project"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     project: Mapped[str] = mapped_column(String(250), nullable=False)
+    project_color: Mapped[str] = mapped_column(String(7))
     posts = relationship("TodoPost", back_populates="project")
 
 
@@ -467,16 +468,19 @@ def work_view(id):
 def projects():
     all_projects = Project.query.order_by(Project.id).all()
     project_list = [all_projects]
-    if request.method == "POST" and request.form.get('submit'):
-        project_name = request.form.get('ProjectName')
+    if request.method == "POST":
+        project_name = request.form['ProjectName']
+        if len(project_name) > 90:
+            flash("Please limit name to 90 characters")
+            return redirect(url_for('projects'))
         result = db.session.execute(db.select(Project).where(Project.project == project_name))
         project_name_result = result.scalar()
         if project_name_result:
             flash("That project already exist, please try again")
             return redirect(url_for('projects'))
         new_project = Project(
-            project=request.form.get('ProjectName'),
-            project_color=request.form.get('ColorInput')
+            project=request.form['ProjectName'],
+            project_color=request.form['ColorInput']
         )
         db.session.add(new_project)
         db.session.commit()
