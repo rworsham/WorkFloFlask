@@ -32,7 +32,6 @@
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i></button>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-todo"><i class="bi bi-patch-plus"></i> Add Todo</button>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#work-state"><i class="bi bi-patch-plus"></i> Add WorkFlo</button>
-
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
@@ -72,7 +71,6 @@
                           </div>
                       </div>
                       <div class="modal-footer">
-
                       </div>
                     </div>
                   </div>
@@ -97,19 +95,15 @@
                           </div>
                       </div>
                       <div class="modal-footer">
-
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="container-fluid">
                     <div class="row gy-1 dashboard-scroll flex-nowrap">
-
                         {% for row in work_states %}
                             {% for work_state in row %}
-
                         <div class="col-md-auto">
-
                             <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-body-tertiary" style="width: 380px;">
                                 <a  class="d-flex align-items-center flex-shrink-0 p-3  text-decoration-none border-bottom">
                                   <span class="fs-5 fw-semibold">{{ work_state.work_state }}</span>
@@ -133,7 +127,7 @@
                                     {% endfor %}
                                     {% endfor %}
                                 </div>
-                              </div>
+                            </div>
                         </div>
                             {% endfor %}
                         {% endfor %}

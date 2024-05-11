@@ -49,7 +49,50 @@
                 </nav>
                 <!-- Page content-->
                 <div class="container-fluid">
-
+                    <div class="accordion col-6 g-3" id="User-list-accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#User-list" aria-expanded="true" aria-controls="collapseOne">
+                                Users
+                              </button>
+                            </h2>
+                             <div id="User-list" class="accordion-collapse collapse show" data-bs-parent="#User-list-accordion">
+                                <div class="accordion-body">
+                                  {% for row in user_list %}
+                                    {% for user in row %}
+                                    <ul class="list-group list-group-horizontal">
+                                      <li class="list-group-item flex-fill">{{user.name}}</li>
+                                      <li class="list-group-item flex-fill">{{ user.email }}</li>
+                                      <li class="list-group-item flex-fill">{{ user.is_admin }}</li>
+                                    </ul>
+                                    {% endfor %}
+                                  {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion col-6 g-3" id="work-state-list-accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#work-state-list" aria-expanded="true" aria-controls="collapseOne">
+                                Work States
+                              </button>
+                            </h2>
+                             <div id="work-state-list" class="accordion-collapse collapse show" data-bs-parent="#work-state-list-accordion">
+                                <div class="accordion-body">
+                                      {% for row in work_state_list %}
+                                        {% for work_state in row %}
+                                        <ul class="list-group list-group-horizontal">
+                                          <li class="list-group-item flex-fill">{{work_state.id}}</li>
+                                          <li class="list-group-item flex-fill">{{ work_state.work_state }}</li>
+                                          <li class="list-group-item flex-fill">{{ work_state.work_state_order }}</li>
+                                        </ul>
+                                        {% endfor %}
+                                      {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

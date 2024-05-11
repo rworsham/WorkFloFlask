@@ -3,14 +3,13 @@ from flask import (Flask, render_template, url_for, redirect,
                    request, flash, send_from_directory)
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, EmailField, PasswordField,
-                     SelectField, IntegerField, DateField)
-from wtforms.widgets import ColorInput
+                     SelectField, IntegerField, DateField, BooleanField)
 from wtforms.validators import DataRequired, NumberRange, InputRequired
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_gravatar import Gravatar
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, Text, desc
+from sqlalchemy import Integer, String, ForeignKey, Text, desc, BOOLEAN
 from flask_login import (UserMixin, login_user, LoginManager, login_required,
                          current_user, logout_user)
 from flask_ckeditor import CKEditorField
@@ -98,6 +97,7 @@ class WorkState(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    is_admin: Mapped[bool] = mapped_column(BOOLEAN)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(1000))
@@ -552,7 +552,11 @@ def download_file(post_id, file_id):
 @app.route('/settings', methods=['GET','POST'])
 @login_required
 def settings():
-    return render_template('settings.html')
+    user_results = db.session.query(User).all()
+    user_list = [user_results]
+    work_state_results = WorkState.query.order_by(WorkState.work_state_order).all()
+    work_state_list = [work_state_results]
+    return render_template('settings.html',user_list=user_list, work_state_list=work_state_list)
 
 
 def notification(message, reciever, subject):
