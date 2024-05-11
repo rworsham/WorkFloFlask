@@ -7,14 +7,12 @@
         <meta name="author" content="" />
         <title>WorkFlo</title>
         <link rel="icon" href="{{ url_for('static', filename='assets/favicon.svg') }}" type="image/svg+xml">
-        <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     </head>
     <body>
         {% from "bootstrap5/form.html" import render_form %}
         <div class="d-flex" id="wrapper">
-            <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">WorkFlo<i class="bi bi-cloud-haze2"></i></div>
                 <div class="list-group list-group-flush">
@@ -24,9 +22,7 @@
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Events</a>
                 </div>
             </div>
-            <!-- Page content wrapper-->
             <div id="page-content-wrapper">
-                <!-- Top navigation-->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                     <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i></button>
@@ -48,6 +44,7 @@
                         </div>
                     </div>
                 </nav>
+
                 <div class="container-fluid">
                     <div class="row">
                         <h1 class="text-decoration-underline d-flex justify-content-center text-center">{{ project.project }}</h1>
@@ -79,9 +76,7 @@
                 </div>
             </div>
         </div>
-        <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     </body>
 </html>

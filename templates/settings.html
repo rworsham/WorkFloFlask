@@ -6,14 +6,13 @@
         <meta name="description" content="" />
         <meta name="author" content="" />
         <title>WorkFlo</title>
-        <link rel="icon" href="static/assets/favicon.svg" type="image/svg+xml">
-        <!-- Core theme CSS (includes Bootstrap)-->
+        <link rel="icon" href="{{ url_for('static', filename='assets/favicon.svg') }}" type="image/svg+xml">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     </head>
     <body>
+    {% from "bootstrap5/form.html" import render_form %}
         <div class="d-flex" id="wrapper">
-            <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">WorkFlo<i class="bi bi-cloud-haze2"></i></div>
                 <div class="list-group list-group-flush">
@@ -23,22 +22,22 @@
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Events</a>
                 </div>
             </div>
-            <!-- Page content wrapper-->
             <div id="page-content-wrapper">
-                <!-- Top navigation-->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                    <div class="container-fluid">
+                    <div class="container-fluid gap-2">
                         <button class="btn btn-secondary" id="sidebarToggle"><i class="bi bi-chevron-double-left"></i></button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#register-new-user"><i class="bi bi-patch-plus"></i> Register New User</button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#create-work-state"><i class="bi bi-patch-plus"></i> New Work State</button>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                                 <li class="nav-item"><a class="nav-link" >{{ current_user.name }}</a></li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear-wide"></i></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
                                         <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
-                                        <a class="dropdown-item" href="#!">Settings</a>
+                                        <a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
                                     </div>
@@ -47,48 +46,122 @@
                         </div>
                     </div>
                 </nav>
-                <!-- Page content-->
+                <div class="modal fade" id="register-new-user" tabindex="-1" aria-labelledby="register-new-user-label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="register-new-user-label">Register New User</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                          <div class="col-lg-8 col-md-10 mx-auto">
+                            {{ render_form(register_new_user_form, novalidate=True,button_map={"submit": "success"}) }}
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal fade" id="create-work-state" tabindex="-1" aria-labelledby="create-work-state-label" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="create-work-state-label">Add Todo</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                          <div class="col-lg-8 col-md-10 mx-auto">
+                            {{ render_form(work_state_form, novalidate=True,button_map={"save": "success"}) }}
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                      <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                      <div>
+                        <p class="flash">{{ message }}</p>
+                      </div>
+                    </div>
+                  {% endfor %}
+                  {% endif %}
+                {% endwith %}
                 <div class="container-fluid">
-                    <div class="accordion col-6 g-3" id="User-list-accordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#User-list" aria-expanded="true" aria-controls="collapseOne">
-                                Users
-                              </button>
-                            </h2>
-                             <div id="User-list" class="accordion-collapse collapse show" data-bs-parent="#User-list-accordion">
-                                <div class="accordion-body">
-                                  {% for row in user_list %}
-                                    {% for user in row %}
-                                    <ul class="list-group list-group-horizontal">
-                                      <li class="list-group-item flex-fill">{{user.name}}</li>
-                                      <li class="list-group-item flex-fill">{{ user.email }}</li>
-                                      <li class="list-group-item flex-fill">{{ user.is_admin }}</li>
-                                    </ul>
-                                    {% endfor %}
-                                  {% endfor %}
+                    <div class="row">
+                        <div class="accordion col-6 g-3" id="User-list-accordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#User-list" aria-expanded="true" aria-controls="collapseOne">
+                                    Users
+                                  </button>
+                                </h2>
+                                 <div id="User-list" class="accordion-collapse collapse show" data-bs-parent="#User-list-accordion">
+                                    <div class="accordion-body">
+                                      <ul class="list-group list-group-horizontal">
+                                          <li class="list-group-item list-group-item-secondary col-4 text-center">Username</li>
+                                          <li class="list-group-item list-group-item-secondary col-6 flex-fill text-center">Email</li>
+                                          <li class="list-group-item list-group-item-secondary col-2 text-center">Admin</li>
+                                      </ul>
+                                      {% for row in user_list %}
+                                        {% for user in row %}
+                                        {% if current_user.is_admin == True %}
+                                      <ul class="list-group list-group-horizontal">
+                                          <a href="{{ url_for('delete_user', id=user.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start"></i></a>
+                                          <li class="list-group-item col-3 text-center">{{user.name}}</li>
+                                          <li class="list-group-item col-6 flex-fill text-center">{{ user.email }}</li>
+                                          <li class="list-group-item col-2 text-center">{{ user.is_admin }}</li>
+                                      </ul>
+                                        {% else %}
+                                      <ul class="list-group list-group-horizontal">
+                                          <li class="list-group-item col-3 text-center">{{user.name}}</li>
+                                          <li class="list-group-item col-6 flex-fill text-center">{{ user.email }}</li>
+                                          <li class="list-group-item col-2 text-center">{{ user.is_admin }}</li>
+                                      </ul>
+                                        {% endif %}
+                                        {% endfor %}
+                                      {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="accordion col-6 g-3" id="work-state-list-accordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#work-state-list" aria-expanded="true" aria-controls="collapseOne">
-                                Work States
-                              </button>
-                            </h2>
-                             <div id="work-state-list" class="accordion-collapse collapse show" data-bs-parent="#work-state-list-accordion">
-                                <div class="accordion-body">
-                                      {% for row in work_state_list %}
-                                        {% for work_state in row %}
-                                        <ul class="list-group list-group-horizontal">
-                                          <li class="list-group-item flex-fill">{{work_state.id}}</li>
-                                          <li class="list-group-item flex-fill">{{ work_state.work_state }}</li>
-                                          <li class="list-group-item flex-fill">{{ work_state.work_state_order }}</li>
-                                        </ul>
-                                        {% endfor %}
-                                      {% endfor %}
+                        <div class="accordion col-6 g-3" id="work-state-list-accordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#work-state-list" aria-expanded="true" aria-controls="collapseOne">
+                                    Work States
+                                  </button>
+                                </h2>
+                                 <div id="work-state-list" class="accordion-collapse collapse show" data-bs-parent="#work-state-list-accordion">
+                                    <div class="accordion-body">
+                                            <ul class="list-group list-group-horizontal">
+                                              <li class="list-group-item list-group-item-secondary col-3 text-center">ID</li>
+                                              <li class="list-group-item list-group-item-secondary col-6 flex-fill text-center">Name</li>
+                                              <li class="list-group-item list-group-item-secondary col-3 text-center">Position</li>
+                                            </ul>
+                                          {% for row in work_state_list %}
+                                            {% for work_state in row %}
+                                            {% if current_user.is_admin == True %}
+                                            <ul class="list-group list-group-horizontal">
+                                              <a href="{{ url_for('delete_work_state', id=work_state.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start"></i></a>
+                                              <li class="list-group-item col-9 flex-fill text-center">{{ work_state.work_state }}</li>
+                                              <li class="list-group-item col-2 text-center">{{ work_state.work_state_order }}</li>
+                                            </ul>
+                                            {% else %}
+                                            <ul class="list-group list-group-horizontal">
+                                              <li class="list-group-item col-3 text-center">{{work_state.id}}</li>
+                                              <li class="list-group-item col-6 flex-fill text-center">{{ work_state.work_state }}</li>
+                                              <li class="list-group-item col-3 text-center">{{ work_state.work_state_order }}</li>
+                                            </ul>
+                                            {% endif %}
+                                            {% endfor %}
+                                          {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -96,9 +169,7 @@
                 </div>
             </div>
         </div>
-        <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     </body>
 </html>

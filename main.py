@@ -156,7 +156,8 @@ class RegistrationForm(FlaskForm):
     password = PasswordField("Enter Password",
                              validators=[DataRequired()])
     name = StringField("Username", validators=[DataRequired()])
-    submit = SubmitField("Sign Up")
+    is_admin = BooleanField("Set Admin")
+    submit = SubmitField("Register")
 
 
 class CommentForm(FlaskForm):
@@ -513,6 +514,27 @@ def overview():
 def events():
     return render_template('events.html')
 
+@app.route("/delete_user/<int:id>")
+@login_required
+def delete_user(id):
+    if current_user.is_admin:
+        user_to_delete = db.get_or_404(User, id)
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return redirect(url_for('settings'))
+    return redirect(url_for('settings'))
+
+
+@app.route("/delete_state/<int:id>")
+@login_required
+def delete_work_state(id):
+    if current_user.is_admin:
+        work_state_to_delete = db.get_or_404(WorkState, id)
+        db.session.delete(work_state_to_delete)
+        db.session.commit()
+        return redirect(url_for('settings'))
+    return redirect(url_for('settings'))
+
 
 @app.route("/delete/<int:id>")
 @login_required
@@ -556,7 +578,33 @@ def settings():
     user_list = [user_results]
     work_state_results = WorkState.query.order_by(WorkState.work_state_order).all()
     work_state_list = [work_state_results]
-    return render_template('settings.html',user_list=user_list, work_state_list=work_state_list)
+    work_state_form = CreateWorkStateForm()
+    register_new_user_form = RegistrationForm()
+    if register_new_user_form.submit.data and register_new_user_form.validate_on_submit():
+        new_user = User(
+            name=register_new_user_form.name.data,
+            email=register_new_user_form.email.data,
+            is_admin=register_new_user_form.is_admin.data,
+            password=generate_password_hash(password=register_new_user_form.password.data,
+                                            method="pbkdf2:sha256",
+                                            salt_length=8)
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('settings'))
+    if work_state_form.save.data and work_state_form.validate_on_submit():
+        new_work_state = WorkState(
+            work_state=work_state_form.work_state.data,
+            work_state_order=work_state_form.work_state_order.data
+        )
+        db.session.add(new_work_state)
+        db.session.commit()
+        return redirect(url_for('settings'))
+    return render_template('settings.html',
+                           user_list=user_list,
+                           work_state_list=work_state_list,
+                           work_state_form=work_state_form,
+                           register_new_user_form=register_new_user_form)
 
 
 def notification(message, reciever, subject):
@@ -572,6 +620,16 @@ def notification(message, reciever, subject):
     server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
     server.send_message(msg)
     server.quit()
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(401)
+def page_not_found(e):
+    return render_template('401.html'), 401
 
 
 
