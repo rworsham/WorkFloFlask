@@ -112,7 +112,7 @@
                                         {% for user in row %}
                                         {% if current_user.is_admin == True %}
                                       <ul class="list-group list-group-horizontal">
-                                          <a href="{{ url_for('delete_user', id=user.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start"></i></a>
+                                          <a href="{{ url_for('delete_user', id=user.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start red"></i></a>
                                           <li class="list-group-item col-3 text-center">{{user.name}}</li>
                                           <li class="list-group-item col-6 flex-fill text-center">{{ user.email }}</li>
                                           <li class="list-group-item col-2 text-center">{{ user.is_admin }}</li>
@@ -148,7 +148,7 @@
                                             {% for work_state in row %}
                                             {% if current_user.is_admin == True %}
                                             <ul class="list-group list-group-horizontal">
-                                              <a href="{{ url_for('delete_work_state', id=work_state.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start"></i></a>
+                                              <a href="{{ url_for('delete_work_state', id=work_state.id) }}" class="list-group-item col-1 text-start"><i class="bi bi-trash text-start red"></i></a>
                                               <li class="list-group-item col-9 flex-fill text-center">{{ work_state.work_state }}</li>
                                               <li class="list-group-item col-2 text-center">{{ work_state.work_state_order }}</li>
                                             </ul>
