@@ -91,6 +91,7 @@ class WorkState(db.Model):
     __tablename__ = "workstate"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     work_state: Mapped[str] = mapped_column(String(250), nullable=False)
+    is_hidden: Mapped[bool] = mapped_column(BOOLEAN)
     work_state_order: Mapped[int] = mapped_column(Integer)
 
 
@@ -174,12 +175,20 @@ class CreateWorkStateForm(FlaskForm):
     work_state = StringField("WorkFlo Name", validators=[DataRequired()])
     work_state_order = IntegerField("WorkFlo Order: 1 Through etc.",
                                     validators=[NumberRange(min=1),DataRequired()])
+    is_hidden = BooleanField("Hide from Dashboard?")
     save = SubmitField("Save")
 
 
 class WorkStateChange(FlaskForm):
     work_state = SelectField(" ", coerce=int,
                              validators=[InputRequired()])
+    save = SubmitField("Save")
+
+
+class EditWorkState(FlaskForm):
+    work_state_order = IntegerField("WorkFlo Order: 1 Through etc.",
+                                    validators=[NumberRange(min=1),DataRequired()])
+    is_hidden = BooleanField("Hide from Dashboard?")
     save = SubmitField("Save")
 
 
@@ -272,7 +281,7 @@ def logout():
 @app.route("/dashboard", methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    all_work_states = WorkState.query.order_by(WorkState.work_state_order).all()
+    all_work_states = WorkState.query.order_by(WorkState.work_state_order).where(WorkState.is_hidden == False).all()
     all_work_state_list = [all_work_states]
     todos = TodoPost.query.order_by(TodoPost.work_state).all()
     todos_list = [todos]
@@ -302,7 +311,8 @@ def dashboard():
         if work_state_form.save.data and work_state_form.validate_on_submit():
             new_state = WorkState(
                 work_state=work_state_form.work_state.data,
-                work_state_order=work_state_form.work_state_order.data
+                work_state_order=work_state_form.work_state_order.data,
+                is_hidden=work_state_form.is_hidden.data
             )
             db.session.add(new_state)
             db.session.commit()
@@ -515,6 +525,22 @@ def overview():
 def events():
     return render_template('events.html')
 
+
+@app.route('/edit_work_state/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_work_state(id):
+    if current_user.is_admin:
+        work_state_to_edit = db.get_or_404(WorkState, id)
+        work_state_to_edit.work_state_order = request.form['work_state_order']
+        form_is_hidden = request.form.get('is_hidden')
+        work_state_to_edit.is_hidden = False
+        if form_is_hidden:
+            if form_is_hidden == "y":
+                work_state_to_edit.is_hidden = True
+        db.session.commit()
+        return redirect(url_for('settings'))
+    return redirect(url_for('settings'))
+
 @app.route("/delete_user/<int:id>")
 @login_required
 def delete_user(id):
@@ -581,6 +607,7 @@ def settings():
     work_state_list = [work_state_results]
     work_state_form = CreateWorkStateForm()
     register_new_user_form = RegistrationForm()
+    work_state_edit_form = EditWorkState()
     if current_user.is_admin:
         if register_new_user_form.submit.data and register_new_user_form.validate_on_submit():
             new_user = User(
@@ -598,7 +625,8 @@ def settings():
         if work_state_form.save.data and work_state_form.validate_on_submit():
             new_work_state = WorkState(
                 work_state=work_state_form.work_state.data,
-                work_state_order=work_state_form.work_state_order.data
+                work_state_order=work_state_form.work_state_order.data,
+                is_hidden=work_state_form.is_hidden.data
             )
             db.session.add(new_work_state)
             db.session.commit()
@@ -607,7 +635,8 @@ def settings():
                            user_list=user_list,
                            work_state_list=work_state_list,
                            work_state_form=work_state_form,
-                           register_new_user_form=register_new_user_form)
+                           register_new_user_form=register_new_user_form,
+                           work_state_edit_form=work_state_edit_form)
 
 
 def notification(message, reciever, subject):

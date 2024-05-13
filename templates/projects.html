@@ -32,7 +32,7 @@
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                                 <li class="nav-item"><a class="nav-link" >{{ current_user.name }}</a></li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear-wide"></i></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
                                         <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
@@ -84,7 +84,7 @@
                        {% for row in projects %}
                        {% for project in row %}
                         <div class="col-lg-2 mt-3">
-                            <div class="card ">
+                            <div class="card h-100">
                                 <div class="card-header" style="background-color: {{project.project_color}};"></div>
                                     <div class="card-body bg-light">
                                         <h5 class="card-title">{{ project.project }}</h5>

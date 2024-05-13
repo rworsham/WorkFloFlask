@@ -39,11 +39,11 @@
                             <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                                 <li class="nav-item"><a class="nav-link" >{{ current_user.name }}</a></li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear-wide"></i></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
                                         <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
-                                        <a class="dropdown-item" href="#!">Settings</a>
+                                        <a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
                                     </div>
@@ -70,7 +70,7 @@
                           <div class="col-lg-8 col-md-10 mx-auto ">
                               <p class="fs-5">{{ current_work_state }}</p>
                               <div class="fs-2"><i class="bi bi-arrow-down"></i></div>
-                            {{ render_form(work_state_change_form, novalidate=True,button_map={"save_updates": "success"}) }}
+                            {{ render_form(work_state_change_form, novalidate=True,button_map={"save": "success"}) }}
                           </div>
                       </div>
                       <div class="modal-footer">
@@ -95,7 +95,7 @@
                           {% endif %}
                         {% endwith %}
                           <div class="col-lg-8 col-md-10 mx-auto">
-                            {{ render_form(edit_form, novalidate=True,button_map={"save": "success"}) }}
+                            {{ render_form(edit_form, novalidate=True,button_map={"save_updates": "success"}) }}
                           </div>
                       </div>
                       <div class="modal-footer">
