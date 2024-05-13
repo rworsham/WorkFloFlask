@@ -247,6 +247,7 @@ def register():
         new_user = User(
             name=form.name.data,
             email=form.email.data,
+            is_admin=form.is_admin.data,
             password=generate_password_hash(password=form.password.data,
                                             method="pbkdf2:sha256",
                                             salt_length=8)
@@ -297,15 +298,15 @@ def dashboard():
         db.session.add(new_todo)
         db.session.commit()
         return redirect(url_for('dashboard'))
-
-    if work_state_form.save.data and work_state_form.validate_on_submit():
-        new_state = WorkState(
-            work_state=work_state_form.work_state.data,
-            work_state_order=work_state_form.work_state_order.data
-        )
-        db.session.add(new_state)
-        db.session.commit()
-        return redirect(url_for('dashboard'))
+    if current_user.is_admin:
+        if work_state_form.save.data and work_state_form.validate_on_submit():
+            new_state = WorkState(
+                work_state=work_state_form.work_state.data,
+                work_state_order=work_state_form.work_state_order.data
+            )
+            db.session.add(new_state)
+            db.session.commit()
+            return redirect(url_for('dashboard'))
     return render_template("dashboard.html",
                            form=form,
                            work_state_form=work_state_form,
@@ -580,26 +581,28 @@ def settings():
     work_state_list = [work_state_results]
     work_state_form = CreateWorkStateForm()
     register_new_user_form = RegistrationForm()
-    if register_new_user_form.submit.data and register_new_user_form.validate_on_submit():
-        new_user = User(
-            name=register_new_user_form.name.data,
-            email=register_new_user_form.email.data,
-            is_admin=register_new_user_form.is_admin.data,
-            password=generate_password_hash(password=register_new_user_form.password.data,
-                                            method="pbkdf2:sha256",
-                                            salt_length=8)
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('settings'))
-    if work_state_form.save.data and work_state_form.validate_on_submit():
-        new_work_state = WorkState(
-            work_state=work_state_form.work_state.data,
-            work_state_order=work_state_form.work_state_order.data
-        )
-        db.session.add(new_work_state)
-        db.session.commit()
-        return redirect(url_for('settings'))
+    if current_user.is_admin:
+        if register_new_user_form.submit.data and register_new_user_form.validate_on_submit():
+            new_user = User(
+                name=register_new_user_form.name.data,
+                email=register_new_user_form.email.data,
+                is_admin=register_new_user_form.is_admin.data,
+                password=generate_password_hash(password=register_new_user_form.password.data,
+                                                method="pbkdf2:sha256",
+                                                salt_length=8)
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('settings'))
+    if current_user.is_admin:
+        if work_state_form.save.data and work_state_form.validate_on_submit():
+            new_work_state = WorkState(
+                work_state=work_state_form.work_state.data,
+                work_state_order=work_state_form.work_state_order.data
+            )
+            db.session.add(new_work_state)
+            db.session.commit()
+            return redirect(url_for('settings'))
     return render_template('settings.html',
                            user_list=user_list,
                            work_state_list=work_state_list,

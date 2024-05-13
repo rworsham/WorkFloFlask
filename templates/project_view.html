@@ -59,10 +59,24 @@
                             <div id="collapseOne{{work_state[0]}}" class="accordion-collapse collapse" data-bs-parent="#accordion{{work_state[0]}}">
                               <div class="accordion-body" style="height: 50;">
                                   <div class="list-group ">
+                                      <ul class="list-group list-group-horizontal">
+                                                <li class="list-group-item list-group-item-secondary col-1 text-center">ID</li>
+                                                <li class="list-group-item list-group-item-secondary col-4 text-center">Title</li>
+                                                <li class="list-group-item list-group-item-secondary col-2 text-center">Date Created</li>
+                                                <li class="list-group-item list-group-item-secondary col-2 text-center">Due Date</li>
+                                                <li class="list-group-item list-group-item-secondary col-3 text-center">Creator</li>
+                                      </ul>
                                       {% for row in project_todo_list %}
                                         {% for todo in row %}
                                             {% if todo.work_state == work_state[0] %}
-                                                <a href="{{url_for('work_view', id=todo.id) }}" class="list-group-item list-group-item-action mb-2 border rounded">{{ todo.id }} | {{todo.title}} | {{todo.date_created}} | {{todo.due_date}} | {{todo.author.name}}</a>
+                                            <ul class="list-group list-group-horizontal position-relative">
+                                                <li><a  href="{{ url_for('work_view', id=todo.id) }}" class="stretched-link"></a></li>
+                                                <li class="list-group-item col-1 text-center">{{ todo.id }}</li>
+                                                <li class="list-group-item col-4 text-center">{{todo.title}}</li>
+                                                <li class="list-group-item col-2 text-center">{{todo.date_created}}</li>
+                                                <li class="list-group-item col-2 text-center">{{todo.due_date}}</li>
+                                                <li class="list-group-item col-3 text-center">{{todo.author.name}}</li>
+                                            </ul>
                                             {% endif %}
                                         {% endfor %}
                                       {% endfor %}
