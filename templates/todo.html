@@ -16,10 +16,10 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">WorkFlo<i class="bi bi-cloud-haze2"></i></div>
                 <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('overview') }}">Overview</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('dashboard') }}">Dashboard</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('projects') }}">Projects</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('overview') }}">Overview</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Events</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Calendar</a>
                 </div>
             </div>
             <div id="page-content-wrapper">
@@ -108,7 +108,7 @@
                   <div class="container-fluid">
                     <div class="row">
                       <div class="col-md-2 pt-2 border border-bottom-0 border-start-0 border-secondary-subtle rounded-top">
-                        <h2 class="fst-italic">{{ current_work_state }}</h2>
+                        <h2 class="fst-italic text-wrap">{{ current_work_state }}</h2>
                           <h4 class="fst-italic">{{ current_project }}</h4>
                       </div>
                       <div class="col-md-7 pt-2 d-flex justify-content-center text-center border border-bottom-0 border-start-0 border-end-0 border-secondary-subtle rounded-top">

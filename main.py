@@ -18,6 +18,11 @@ from werkzeug.utils import secure_filename
 import smtplib
 from email.message import EmailMessage
 from datetime import date, datetime
+import plotly
+import plotly.express as px
+import pandas as pd
+import numpy
+import json
 
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -517,7 +522,8 @@ def projects_view(project_id):
 @app.route('/overview')
 @login_required
 def overview():
-    return render_template('overview.html')
+    bar_chart = bar_chart_todo()
+    return render_template('overview.html', bar_chart=bar_chart)
 
 
 @app.route('/events', methods=['GET', 'POST'])
@@ -637,6 +643,29 @@ def settings():
                            work_state_form=work_state_form,
                            register_new_user_form=register_new_user_form,
                            work_state_edit_form=work_state_edit_form)
+
+
+def bar_chart_todo():
+    num_work_state = db.session.query(WorkState).all()
+    print(num_work_state)
+    print(len(num_work_state))
+    index = numpy.linspace(1,len(num_work_state),len(num_work_state))
+    print(index)
+    todos = TodoPost.query.order_by(TodoPost.work_state).all()
+    todos_list = [todos]
+    print(todos_list)
+    available_work_states = db.session.query(WorkState).where(WorkState.is_hidden == False).all()
+    columns = [i.work_state for i in available_work_states]
+    print(columns)
+    # df = pd.DataFrame(todos_list,
+    #                   columns=['Work-State', "# of To-do's"],
+    #                   index=index)
+    #
+    # fig = px.bar(df, x="Work-State", y="'# of To-do's'", color="City", barmode="group")
+    #
+    # graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    #
+    # return graphJSON
 
 
 def notification(message, reciever, subject):

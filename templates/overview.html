@@ -15,10 +15,10 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">WorkFlo<i class="bi bi-cloud-haze2"></i></div>
                 <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('overview') }}">Overview</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('dashboard') }}">Dashboard</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('projects') }}">Projects</a>
-                    <a class="list-group-item list-group-item-action list-group-item-dark p-3" href="{{ url_for('overview') }}">Overview</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Events</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('events') }}">Calendar</a>
                 </div>
             </div>
             <div id="page-content-wrapper">
@@ -44,7 +44,13 @@
                     </div>
                 </nav>
                 <div class="container-fluid">
-
+                    <div class="chart" id="bargraph">
+                        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                        <script>
+                            var graphs = {{bar_chart | safe}};
+                            Plotly.plot('bargraph',graphs,{});
+                        </script>
+                    </div>
                 </div>
             </div>
         </div>
