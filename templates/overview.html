@@ -33,7 +33,6 @@
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear-wide"></i></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
-                                        <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
                                         <a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
@@ -44,13 +43,28 @@
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <div class="chart" id="bargraph">
-                        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-                        <script>
-                            var graphs = {{bar_chart | safe}};
-                            Plotly.plot('bargraph',graphs,{});
-                        </script>
+                    <div class="accordion pt-2" id="accordionExample">
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Work State
+                          </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                          <div class="accordion-body">
+                             <div class="chart" id="bargraph">
+                                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                                <script>
+                                    var graphs = {{bar_chart | safe}};
+                                    var config = {responsive: true};
+                                    Plotly.plot('bargraph',graphs,config,{});
+                                </script>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
                 </div>
             </div>
         </div>

@@ -38,7 +38,6 @@
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear-wide"></i></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="#!">Action</a>
-                                        <a class="dropdown-item" href="{{ url_for('register') }}">Register Users</a>
                                         <a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
@@ -112,7 +111,7 @@
                                       <a href="{{ url_for('work_view', id=todo.id) }}"  class="list-group-item list-group-item-action py-3 mb-2 border rounded lh-sm" aria-current="true">
                                         <div class="d-flex w-100 align-items-center justify-content-between">
                                           <strong class="mb-1">{{ todo.title }}</strong>
-                                          <small>{{ todo.date_created }}</small>
+                                          <small>{{ todo.due_date }}</small>
                                         </div>
                                           <div class="col-8 mb-1 small fst-italic">{{ todo.subtitle }}</div>
                                         <div class="d-flex w-100 align-items-center justify-content-between">

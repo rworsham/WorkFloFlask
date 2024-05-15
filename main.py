@@ -21,13 +21,12 @@ from datetime import date, datetime
 import plotly
 import plotly.express as px
 import pandas as pd
-import numpy
 import json
 
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-EMAIL_ADDRESS = "worshamappmanager@gmail.com"
-EMAIL_PASSWORD = os.getenv("PASSWORD")
+EMAIL_ADDRESS = "dalcomworkflo@gmail.com"
+EMAIL_PASSWORD = ("set env var")
 
 
 app = Flask(__name__)
@@ -201,9 +200,8 @@ class EditTodoForm(FlaskForm):
     todo_title = StringField("Title")
     todo_subtitle = StringField("Subtitle")
     todo_body = CKEditorField("Description")
-    todo_due_date = DateField()
-    todo_project = SelectField("Select Project", coerce=int,
-                               validators=[InputRequired()])
+    todo_due_date = DateField(default=datetime.today())
+    todo_project = SelectField("Select Project", coerce=int)
     save_updates = SubmitField("Save")
 
 
@@ -364,6 +362,7 @@ def work_view(id):
         user_is_subscribed_to_updates=False
     if work_state_form.save.data and work_state_form.validate_on_submit:
         todo_post.work_state = work_state_form.work_state.data
+        changed_work_state = db.session.query(WorkState).where(WorkState.id == work_state_form.work_state.data).scalar()
         db.session.commit()
         message = f'''
             <!DOCTYPE html>
@@ -378,7 +377,7 @@ def work_view(id):
                 <table role="presentation" width="100%">
                     <tr>
                         <td bgcolor="#004990" align="center" style="color: white;">
-                            <h1 style="font-size:56px;">{todo.title} ID:{todo.id}</h1>
+                            <h1 style="font-size:56px;">ID:{todo.id} - {todo.title} </h1>
                         </td>
                 </table>
                 <table role="presentation" border="0" cellpadding="0" cellspacing="10px" style="padding: 30px 30px 30px 60px;">
@@ -386,7 +385,7 @@ def work_view(id):
                         <td style="vertical-align:top;">
                             <h2>{todo.title}</h2>
                             <p>
-                                {current_user.name} changed work state to {current_work_state_name}.
+                                {current_user.name} changed work state from {current_work_state_name} to {changed_work_state.work_state}.
                             </p>
                         </td>
                     </tr>
@@ -414,16 +413,17 @@ def work_view(id):
         if edit_form.todo_title.data:
             todo_post.title = edit_form.todo_title.data
             db.session.commit()
-        elif edit_form.todo_subtitle.data:
+        if edit_form.todo_subtitle.data:
             todo_post.subtitle = edit_form.todo_subtitle.data
             db.session.commit()
-        elif edit_form.todo_body.data:
+        if edit_form.todo_body.data:
             todo_post.body = edit_form.todo_body.data
             db.session.commit()
-        elif edit_form.todo_due_date.data:
-            todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data,"%B %d, %Y")
-            db.session.commit()
-        elif edit_form.todo_project.data:
+        if edit_form.todo_due_date.data:
+            if edit_form.todo_due_date.data != datetime.today():
+                todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data,"%B %d, %Y")
+                db.session.commit()
+        if edit_form.todo_project.data:
             if edit_form.todo_project.data != "":
                 todo_post.project_id = int(edit_form.todo_project.data)
                 db.session.commit()
@@ -460,8 +460,6 @@ def work_view(id):
 
     if unsubscribe.unsubscribe.data:
         subbed_user = db.session.query(Subscribed).where(Subscribed.post_id == id).where(Subscribed.user_email == current_user.email).scalar()
-        print(subbed_user)
-
         subbed_user.post_id = ""
         db.session.commit()
         return redirect(url_for('work_view', id=id))
@@ -654,6 +652,7 @@ def bar_chart_todo():
     df_graph = df_work_state.join(df_todo_graph)
     fig = px.bar(df_graph, x="work_state", y="# of To-do's", labels={'work_state': 'Work State'}, barmode="group")
     fig.update_layout(yaxis_range=[0,20])
+    fig.update_traces(marker_color='green')
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return graphJSON
 
@@ -663,7 +662,7 @@ def notification(message, reciever, subject):
     msg.set_content(message, subtype='html')
 
     msg['Subject'] = subject
-    msg['From'] = "WorkFlo"
+    msg['From'] = "Dalcom WorkFlo"
     msg['To'] = reciever
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
