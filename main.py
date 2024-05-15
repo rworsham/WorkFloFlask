@@ -649,18 +649,12 @@ def bar_chart_todo():
     df_todo = pd.read_sql(sql=db.session.query(TodoPost).with_entities(TodoPost.work_state).statement, con=db.engine)
     df_todo_count = df_todo.groupby("work_state").size()
     df_todo_graph = df_todo_count.rename("# of To-do's")
-    print(df_todo_graph)
     df_work_state = pd.read_sql(sql=db.session.query(WorkState).with_entities(WorkState.work_state).order_by(WorkState.work_state_order).statement, con=db.engine)
-    # print(df_work_state)
-    # df_work_state_graph = df_work_state.rename("Work State")
-    df_graph = pd.concat([df_todo_graph,df_work_state ])
-    df_graph = df_graph.reset_index(drop=True)
-    print(df_graph)
-    print(type(df_graph))
+    df_work_state.index += 1
+    df_graph = df_work_state.join(df_todo_graph)
     fig = px.bar(df_graph, x="work_state", y="# of To-do's", labels={'work_state': 'Work State'}, barmode="group")
-
+    fig.update_layout(yaxis_range=[0,20])
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
     return graphJSON
 
 
