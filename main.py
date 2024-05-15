@@ -647,25 +647,24 @@ def settings():
 
 def bar_chart_todo():
     num_work_state = db.session.query(WorkState).all()
-    print(num_work_state)
-    print(len(num_work_state))
     index = numpy.linspace(1,len(num_work_state),len(num_work_state))
     print(index)
     todos = TodoPost.query.order_by(TodoPost.work_state).all()
     todos_list = [todos]
     print(todos_list)
     available_work_states = db.session.query(WorkState).where(WorkState.is_hidden == False).all()
-    columns = [i.work_state for i in available_work_states]
+    columns = [(w.work_state, w.work_state) for w in available_work_states and todos_list]
     print(columns)
-    # df = pd.DataFrame(todos_list,
-    #                   columns=['Work-State', "# of To-do's"],
-    #                   index=index)
-    #
-    # fig = px.bar(df, x="Work-State", y="'# of To-do's'", color="City", barmode="group")
-    #
-    # graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    #
-    # return graphJSON
+    df = pd.DataFrame(columns,
+                      columns=['Work-State', "# of To-do's"],
+                      index=index)
+    print(df)
+
+    fig = px.bar(df, x="Work-State", y="'# of To-do's'", color="City", barmode="group")
+
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return graphJSON
 
 
 def notification(message, reciever, subject):
