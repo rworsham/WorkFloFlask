@@ -420,7 +420,9 @@ def work_view(id):
             todo_post.body = edit_form.todo_body.data
             db.session.commit()
         if edit_form.todo_due_date.data:
-            if edit_form.todo_due_date.data != datetime.today():
+            if edit_form.todo_due_date.data != datetime.date(datetime.today()):
+                print(datetime.date(datetime.today()))
+                print(edit_form.todo_due_date.data)
                 todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data,"%B %d, %Y")
                 db.session.commit()
         if edit_form.todo_project.data:
