@@ -26,7 +26,7 @@ import json
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 EMAIL_ADDRESS = "dalcomworkflo@gmail.com"
-EMAIL_PASSWORD = ("set env var")
+EMAIL_PASSWORD = ("apppassword")
 
 
 app = Flask(__name__)
@@ -569,9 +569,9 @@ def delete_work_state(id):
     return redirect(url_for('settings'))
 
 
-@app.route("/delete/<int:id>")
+@app.route("/delete_todo/<int:id>")
 @login_required
-def delete(id):
+def delete_todo(id):
     todo_to_delete = db.get_or_404(TodoPost, id)
     db.session.delete(todo_to_delete)
     db.session.commit()
