@@ -1,6 +1,6 @@
 import os
 from flask import (Flask, render_template, url_for, redirect,
-                   request, flash, send_from_directory)
+                   request, flash, send_from_directory, jsonify)
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, EmailField, PasswordField,
                      SelectField, IntegerField, DateField, BooleanField)
@@ -525,6 +525,14 @@ def overview():
     bar_chart = bar_chart_todo()
     return render_template('overview.html', bar_chart=bar_chart)
 
+@app.route('/eventdata')
+@login_required
+def event_data():
+    return jsonify(
+        end="2024-05-05T18:00:00",
+        start="2024-05-05T09:00:00",
+        title="Event1"
+    )
 
 @app.route('/events', methods=['GET', 'POST'])
 @login_required
