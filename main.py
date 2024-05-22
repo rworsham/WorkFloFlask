@@ -528,11 +528,14 @@ def overview():
 @app.route('/eventdata')
 @login_required
 def event_data():
-    return jsonify(
-        end="2024-05-05T18:00:00",
-        start="2024-05-05T09:00:00",
-        title="Event1"
-    )
+    print(request.args.get('start'))
+    print(request.args.get('end'))
+    data = {
+        "end" : "2024-05-05T18:00:00",
+        "start" : "2024-05-05T09:00:00",
+        "title" : "Event1"
+    }
+    return jsonify([data])
 
 @app.route('/events', methods=['GET', 'POST'])
 @login_required
