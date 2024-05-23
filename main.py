@@ -28,7 +28,6 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 EMAIL_ADDRESS = "dalcomworkflo@gmail.com"
 EMAIL_PASSWORD = ("apppassword")
 
-
 app = Flask(__name__)
 app.secret_key = "rob"
 login_manager = LoginManager()
@@ -36,6 +35,7 @@ login_manager = LoginManager()
 
 class Base(DeclarativeBase):
     pass
+
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
@@ -66,10 +66,12 @@ class TodoPost(db.Model):
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"))
     project = relationship("Project", back_populates="posts")
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    author = relationship("User",back_populates="posts")
+    author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="parent_post")
     files = relationship("Files", back_populates="parent_post")
     subscribed_users = relationship("Subscribed", back_populates="parent_post")
+    show_on_calendar: Mapped[bool] = mapped_column(BOOLEAN)
+    calendar_date: Mapped[str] = mapped_column(String(50), nullable=True)
 
 
 class Files(db.Model):
@@ -131,8 +133,6 @@ class Subscribed(db.Model):
     parent_post = relationship("TodoPost", back_populates="subscribed_users")
 
 
-
-
 with app.app_context():
     db.create_all()
 
@@ -144,6 +144,7 @@ class CreateTodoForm(FlaskForm):
                              validators=[InputRequired()])
     body = CKEditorField("Content", validators=[DataRequired()])
     due_date = DateField()
+    show_on_calendar = BooleanField("Show on Calendar?")
     project = SelectField("Select Project",
                           coerce=int, validators=[InputRequired()])
     submit = SubmitField("Submit Work")
@@ -167,7 +168,7 @@ class RegistrationForm(FlaskForm):
 
 class CommentForm(FlaskForm):
     submit_comment = SubmitField("Submit Comment")
-    comment = CKEditorField(" ",validators=[DataRequired()])
+    comment = CKEditorField(" ", validators=[DataRequired()])
 
 
 class ProjectForm(FlaskForm):
@@ -178,7 +179,7 @@ class ProjectForm(FlaskForm):
 class CreateWorkStateForm(FlaskForm):
     work_state = StringField("WorkFlo Name", validators=[DataRequired()])
     work_state_order = IntegerField("WorkFlo Order: 1 Through etc.",
-                                    validators=[NumberRange(min=1),DataRequired()])
+                                    validators=[NumberRange(min=1), DataRequired()])
     is_hidden = BooleanField("Hide from Dashboard?")
     save = SubmitField("Save")
 
@@ -191,7 +192,7 @@ class WorkStateChange(FlaskForm):
 
 class EditWorkState(FlaskForm):
     work_state_order = IntegerField("WorkFlo Order: 1 Through etc.",
-                                    validators=[NumberRange(min=1),DataRequired()])
+                                    validators=[NumberRange(min=1), DataRequired()])
     is_hidden = BooleanField("Hide from Dashboard?")
     save = SubmitField("Save")
 
@@ -201,6 +202,7 @@ class EditTodoForm(FlaskForm):
     todo_subtitle = StringField("Subtitle")
     todo_body = CKEditorField("Description")
     todo_due_date = DateField(default=datetime.today())
+    show_on_calendar = BooleanField("Show on calendar?")
     todo_project = SelectField("Select Project", coerce=int)
     save_updates = SubmitField("Save")
 
@@ -215,7 +217,7 @@ class UnsubscribeForm(FlaskForm):
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @login_manager.user_loader
@@ -223,7 +225,7 @@ def load_user(user_id):
     return db.session.get(User, user_id)
 
 
-@app.route('/', methods=["GET","POST"])
+@app.route('/', methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -243,7 +245,7 @@ def login():
     return render_template("login.html", form=form)
 
 
-@app.route('/register',methods=["GET","POST"])
+@app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -302,10 +304,12 @@ def dashboard():
             subtitle=form.subtitle.data,
             work_state=form.work_state.data,
             date_created=date.today().strftime("%B %d, %Y"),
-            due_date=datetime.strftime(form.due_date.data,"%B %d, %Y"),
+            due_date=datetime.strftime(form.due_date.data, "%B %d, %Y"),
             body=form.body.data,
             project_id=form.project.data,
-            author=current_user
+            author=current_user,
+            show_on_calendar=form.show_on_calendar.data,
+            calendar_date=datetime.strftime(form.due_date.data, "%Y%m%d")
         )
         db.session.add(new_todo)
         db.session.commit()
@@ -324,18 +328,21 @@ def dashboard():
                            form=form,
                            work_state_form=work_state_form,
                            work_states=all_work_state_list,
-                           todos=todos_list,)
+                           todos=todos_list, )
 
 
 @app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
 @login_required
 def work_view(id):
+    todo_post = db.get_or_404(TodoPost, id)
     subscribe = SubscribeForm()
     unsubscribe = UnsubscribeForm()
     edit_form = EditTodoForm()
+    if todo_post.show_on_calendar == True:
+        edit_form.show_on_calendar.data = True
     available_projects = db.session.query(Project).all()
     projects_list = ([(i.id, i.project) for i in available_projects])
-    projects_list.insert(0, (0,""))
+    projects_list.insert(0, (0, ""))
     available_work_states = db.session.query(WorkState).all()
     edit_form.todo_project.choices = projects_list
     comment_form = CommentForm()
@@ -348,7 +355,6 @@ def work_view(id):
     work_state_form.work_state.choices = work_state_list
     result = db.session.query(TodoPost).where(TodoPost.id == id)
     todo = result.scalar()
-    todo_post = db.get_or_404(TodoPost, id)
     current_work_state = db.session.query(WorkState).where(WorkState.id == todo.work_state).scalar()
     current_work_state_name = current_work_state.work_state
     current_project = db.session.query(Project).where(Project.id == todo.project_id).scalar()
@@ -357,9 +363,9 @@ def work_view(id):
     subscribed_user_result = db.session.query(Subscribed).where(Subscribed.post_id == id).all()
     subscribed_user_list = [i.user_email for i in subscribed_user_result]
     if current_user.email in subscribed_user_list:
-        user_is_subscribed_to_updates=True
+        user_is_subscribed_to_updates = True
     elif current_user.email not in subscribed_user_list:
-        user_is_subscribed_to_updates=False
+        user_is_subscribed_to_updates = False
     if work_state_form.save.data and work_state_form.validate_on_submit:
         todo_post.work_state = work_state_form.work_state.data
         changed_work_state = db.session.query(WorkState).where(WorkState.id == work_state_form.work_state.data).scalar()
@@ -421,10 +427,15 @@ def work_view(id):
             db.session.commit()
         if edit_form.todo_due_date.data:
             if edit_form.todo_due_date.data != datetime.date(datetime.today()):
-                print(datetime.date(datetime.today()))
-                print(edit_form.todo_due_date.data)
-                todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data,"%B %d, %Y")
+                todo_post.due_date = datetime.strftime(edit_form.todo_due_date.data, "%B %d, %Y")
+                todo_post.calendar_date = datetime.strftime(edit_form.todo_due_date.data, "%Y%m%d")
                 db.session.commit()
+        if request.form.get('show_on_calendar') == "y":
+            todo_post.show_on_calendar = 1
+            db.session.commit()
+        if request.form.get('show_on_calendar') == None:
+            todo_post.show_on_calendar = 0
+            db.session.commit()
         if edit_form.todo_project.data:
             if edit_form.todo_project.data != "":
                 todo_post.project_id = int(edit_form.todo_project.data)
@@ -461,7 +472,8 @@ def work_view(id):
         return redirect(url_for('work_view', id=id))
 
     if unsubscribe.unsubscribe.data:
-        subbed_user = db.session.query(Subscribed).where(Subscribed.post_id == id).where(Subscribed.user_email == current_user.email).scalar()
+        subbed_user = db.session.query(Subscribed).where(Subscribed.post_id == id).where(
+            Subscribed.user_email == current_user.email).scalar()
         subbed_user.post_id = ""
         db.session.commit()
         return redirect(url_for('work_view', id=id))
@@ -525,17 +537,26 @@ def overview():
     bar_chart = bar_chart_todo()
     return render_template('overview.html', bar_chart=bar_chart)
 
+
 @app.route('/eventdata')
 @login_required
 def event_data():
-    print(request.args.get('start'))
-    print(request.args.get('end'))
-    data = {
-        "end" : "2024-05-05T18:00:00",
-        "start" : "2024-05-05T09:00:00",
-        "title" : "Event1"
-    }
-    return jsonify([data])
+    data = []
+    start_date = request.args.get('start').replace("-", "")[:8]
+    end_date = request.args.get('end').replace("-", "")[:8]
+    calendar_events = db.session.query(TodoPost).where(TodoPost.show_on_calendar == True).order_by(
+        TodoPost.calendar_date).all()
+    for calendar in calendar_events:
+        if int(start_date) <= int(calendar.calendar_date) <= int(end_date):
+            event = {
+                "title": f"{calendar.title}",
+                "start": f"{calendar.calendar_date}",
+                "end": f"{calendar.calendar_date}",
+                "url": url_for('work_view', id=calendar.id)
+            }
+            data.append(event)
+    return jsonify(data)
+
 
 @app.route('/events', methods=['GET', 'POST'])
 @login_required
@@ -557,6 +578,7 @@ def edit_work_state(id):
         db.session.commit()
         return redirect(url_for('settings'))
     return redirect(url_for('settings'))
+
 
 @app.route("/delete_user/<int:id>")
 @login_required
@@ -615,7 +637,8 @@ def download_file(post_id, file_id):
     path = UPLOAD_FOLDER + "/" + str(post_id)
     return send_from_directory(path, filename)
 
-@app.route('/settings', methods=['GET','POST'])
+
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     user_results = db.session.query(User).all()
@@ -660,11 +683,12 @@ def bar_chart_todo():
     df_todo = pd.read_sql(sql=db.session.query(TodoPost).with_entities(TodoPost.work_state).statement, con=db.engine)
     df_todo_count = df_todo.groupby("work_state").size()
     df_todo_graph = df_todo_count.rename("# of To-do's")
-    df_work_state = pd.read_sql(sql=db.session.query(WorkState).with_entities(WorkState.work_state).order_by(WorkState.work_state_order).statement, con=db.engine)
+    df_work_state = pd.read_sql(sql=db.session.query(WorkState).with_entities(WorkState.work_state).order_by(
+        WorkState.work_state_order).statement, con=db.engine)
     df_work_state.index += 1
     df_graph = df_work_state.join(df_todo_graph)
     fig = px.bar(df_graph, x="work_state", y="# of To-do's", labels={'work_state': 'Work State'}, barmode="group")
-    fig.update_layout(yaxis_range=[0,20])
+    fig.update_layout(yaxis_range=[0, 20])
     fig.update_traces(marker_color='green')
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return graphJSON
@@ -693,7 +717,6 @@ def page_not_found(e):
 @app.errorhandler(401)
 def page_not_found(e):
     return render_template('401.html'), 401
-
 
 
 if __name__ == '__main__':
