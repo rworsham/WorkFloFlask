@@ -39,7 +39,7 @@ class Base(DeclarativeBase):
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Workflo.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 login_manager.init_app(app)
@@ -63,6 +63,7 @@ class TodoPost(db.Model):
     date_created: Mapped[str] = mapped_column(String(50))
     due_date: Mapped[str] = mapped_column(String(50))
     body: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[str] = mapped_column(Text, nullable=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"))
     project = relationship("Project", back_populates="posts")
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
@@ -99,6 +100,11 @@ class WorkState(db.Model):
     work_state: Mapped[str] = mapped_column(String(250), nullable=False)
     is_hidden: Mapped[bool] = mapped_column(BOOLEAN)
     work_state_order: Mapped[int] = mapped_column(Integer)
+
+class TodoType(db.Model):
+    __tablename__ = "todotype"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    work_type: Mapped[str] = mapped_column(String(15), nullable=False)
 
 
 class User(UserMixin, db.Model):
@@ -145,6 +151,7 @@ class CreateTodoForm(FlaskForm):
     body = CKEditorField("Content", validators=[DataRequired()])
     due_date = DateField()
     show_on_calendar = BooleanField("Show on Calendar?")
+    type = SelectField("Select Project Type", coerce=int)
     project = SelectField("Select Project",
                           coerce=int, validators=[InputRequired()])
     submit = SubmitField("Submit Work")
@@ -203,6 +210,7 @@ class EditTodoForm(FlaskForm):
     todo_body = CKEditorField("Description")
     todo_due_date = DateField(default=datetime.today())
     show_on_calendar = BooleanField("Show on calendar?")
+    todo_type = SelectField("Select Project Type", coerce=int)
     todo_project = SelectField("Select Project", coerce=int)
     save_updates = SubmitField("Save")
 
@@ -294,10 +302,12 @@ def dashboard():
     projects_list = [(i.id, i.project) for i in available_projects]
     available_work_states = db.session.query(WorkState).all()
     work_state_list = [(i.id, i.work_state) for i in available_work_states]
+    type_list = [(1, "New Install"), (2, "Feature"), (3, "Bug")]
     form = CreateTodoForm()
     work_state_form = CreateWorkStateForm()
     form.project.choices = projects_list
     form.work_state.choices = work_state_list
+    form.type.choices = type_list
     if form.submit.data and form.validate_on_submit():
         new_todo = TodoPost(
             title=form.title.data,
@@ -306,6 +316,7 @@ def dashboard():
             date_created=date.today().strftime("%B %d, %Y"),
             due_date=datetime.strftime(form.due_date.data, "%B %d, %Y"),
             body=form.body.data,
+            type=form.type.data,
             project_id=form.project.data,
             author=current_user,
             show_on_calendar=form.show_on_calendar.data,
