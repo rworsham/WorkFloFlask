@@ -325,6 +325,7 @@ def dashboard():
         db.session.add(new_todo)
         db.session.commit()
         return redirect(url_for('dashboard'))
+
     if current_user.is_admin:
         if work_state_form.save.data and work_state_form.validate_on_submit():
             new_state = WorkState(
@@ -335,11 +336,25 @@ def dashboard():
             db.session.add(new_state)
             db.session.commit()
             return redirect(url_for('dashboard'))
+    if form.errors:
+        return render_template("dashboard.html",
+                           form=form,
+                           work_state_form=work_state_form,
+                           work_states=all_work_state_list,
+                           todos=todos_list,
+                           form_error=True)
+    if work_state_form.errors:
+        return render_template("dashboard.html",
+                               form=form,
+                               work_state_form=work_state_form,
+                               work_states=all_work_state_list,
+                               todos=todos_list,
+                               work_state_form_error=True)
     return render_template("dashboard.html",
                            form=form,
                            work_state_form=work_state_form,
                            work_states=all_work_state_list,
-                           todos=todos_list, )
+                           todos=todos_list)
 
 
 @app.route('/dashboard/<int:id>', methods=['GET', 'POST'])
@@ -411,8 +426,8 @@ def work_view(id):
             </body>
             </html>
             '''
-        for reciever in subscribed_user_list:
-            notification(message, reciever, subject)
+        for receiver in subscribed_user_list:
+            notification(message, receiver, subject)
         return redirect(url_for('work_view', id=id))
 
     if comment_form.submit_comment.data and comment_form.validate_on_submit():
@@ -512,12 +527,15 @@ def projects():
         project_name = request.form['ProjectName']
         if len(project_name) > 90:
             flash("Please limit name to 90 characters")
-            return redirect(url_for('projects'))
+            return render_template('projects.html', projects=project_list, project_form_error=True)
+        if len(project_name) == 0:
+            flash("Please enter a name for this project")
+            return render_template('projects.html', projects=project_list, project_form_error=True)
         result = db.session.execute(db.select(Project).where(Project.project == project_name))
         project_name_result = result.scalar()
         if project_name_result:
             flash("That project already exist, please try again")
-            return redirect(url_for('projects'))
+            return render_template('projects.html', projects=project_list, project_form_error=True)
         new_project = Project(
             project=request.form['ProjectName'],
             project_color=request.form['ColorInput']

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -47,6 +47,7 @@
                         </div>
                     </div>
                 </nav>
+
                 <div class="modal fade" id="add-todo" tabindex="-1" aria-labelledby="add-todo-label" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
@@ -55,13 +56,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        {% with messages = get_flashed_messages() %}
-                          {% if messages %}
-                          {% for message in messages %}
-                          <p class="flash">{{ message }}</p>
-                          {% endfor %}
-                          {% endif %}
-                          {% endwith %}
                           <div class="col-lg-8 col-md-10 mx-auto">
                             {{ render_form(form, novalidate=True,button_map={"submit": "success"}) }}
                           </div>
@@ -79,13 +73,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        {% with messages = get_flashed_messages() %}
-                          {% if messages %}
-                          {% for message in messages %}
-                          <p class="flash">{{ message }}</p>
-                          {% endfor %}
-                          {% endif %}
-                          {% endwith %}
                           <div class="col-lg-8 col-md-10 mx-auto">
                             {{ render_form(work_state_form, novalidate=True,button_map={"save": "success"}) }}
                           </div>
@@ -96,6 +83,7 @@
                   </div>
                 </div>
                 <div class="container-fluid">
+
                     <div class="row gy-1 dashboard-scroll flex-nowrap">
                         {% for row in work_states %}
                             {% for work_state in row %}
@@ -128,9 +116,27 @@
                             {% endfor %}
                         {% endfor %}
                     </div>
+
                 </div>
             </div>
         </div>
+        {% if form_error %}
+        <script type="text/javascript">
+            window.onload = () => {
+              const myModal = new bootstrap.Modal('#add-todo');
+              myModal.show();
+            }
+        </script>
+        {% endif %}
+        {% if work_state_form_error %}
+        <script type="text/javascript">
+            window.onload = () => {
+              const myModal = new bootstrap.Modal('#work-state');
+              myModal.show();
+            }
+        </script>
+        {% endif %}
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     </body>
