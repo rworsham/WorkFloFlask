@@ -1,0 +1,1 @@
+Workflo is a Kanban-style project management software built with Flask and Bootstrap. Complete with project boards, statistic reporting, and schedule tracking this also includes full CRUD functionality with PostgreSQL. 
